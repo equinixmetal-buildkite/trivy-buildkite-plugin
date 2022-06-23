@@ -14,7 +14,7 @@ Add the following to your `pipeline.yml`:
 steps:
   - command: ls
     plugins:
-      - hnadimin/trivy#v1.0.0: ~
+      - equinixmetal/trivy#v1.0.0: ~
 ```
 
 ## Developing
