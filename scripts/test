@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+if [[ "${DEBUG:-}" -gt 0 ]]
+then
+  set -x
+fi
+
+echo "--- BATS"
+docker-compose run --rm tests
+
+echo "--- Plugin Lint"
+docker-compose run --rm lint
+
+echo "--- Shellcheck"
+docker run --rm -v "${PWD}:/mnt" --workdir /mnt koalaman/shellcheck:stable hooks/** scripts/**
+
+echo "--- Checking Markdown files (meta)..."
+./hooks/command

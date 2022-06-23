@@ -1,0 +1,11 @@
+name: Trivy
+description: Trivy FS Scan
+author: Hari
+requirements:
+  - bash
+  - docker
+configuration:
+  properties:
+    propertyname:
+      type: string
+  additionalProperties: false

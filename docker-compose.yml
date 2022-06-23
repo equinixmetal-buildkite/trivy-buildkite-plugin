@@ -1,0 +1,7 @@
+---
+version: '3.8'
+services:
+  tests:
+    image: buildkite/plugin-tester
+    volumes:
+      - ".:/plugin"
