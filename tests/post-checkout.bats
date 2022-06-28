@@ -13,5 +13,5 @@ setup() {
  # assert_output --partial "Detecting pip vulnerabilities..."
  # assert_output --partial "HIGH: 2"
   assert_success
-  unstub docker
+  assert_output --partial "scanning filesystem"
 }
