@@ -1,2 +1,2 @@
 #!/bin/bash
-docker run -v $PWD:/workdir  --rm aquasec/trivy fs /workdir --exit-code 1 
+docker run -v $PWD:/workdir  --rm aquasec/trivy:0.29.2 fs --exit-code 1 --security-checks vuln /workdir 
