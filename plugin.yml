@@ -6,6 +6,12 @@ requirements:
   - docker
 configuration:
   properties:
-    propertyname:
+    exit-code:
+      type: integer
+    severity:
+      type: string
+    ignore-unfixed:
+      type: boolean
+    image:      
       type: string
   additionalProperties: false
