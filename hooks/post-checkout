@@ -1,2 +1,19 @@
 #!/bin/bash
-docker run -v $PWD:/workdir  --rm aquasec/trivy:0.29.2 fs --exit-code 1 --security-checks vuln /workdir 
+#docker run -v $PWD:/workdir  --rm aquasec/trivy:0.29.2 fs --exit-code 1 --security-checks vuln /workdir
+
+default_image="aquasec/trivy:0.29.2"
+image="${BUILDKITE_PLUGIN_TRIVY_IMAGE:-$default_image}"
+
+args=()
+
+if [[ "${BUILDKITE_PLUGIN_TRIVY_EXIT_CODE:-0}" -eq 1 ]] ; then
+  export args+=("--exit-code 1")
+else
+  export args+=("--exit-code 0")
+fi
+
+if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SEVERITY:-}" ]] ; then
+  export args+=("--severity \"${BUILDKITE_PLUGIN_TRIVY_SEVERITY}\"")
+fi
+echo "scanning filesystem"
+docker run -v $PWD:/workdir --rm $image fs ${args[@]} /workdir
