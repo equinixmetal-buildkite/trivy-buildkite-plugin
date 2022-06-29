@@ -16,7 +16,26 @@ steps:
     plugins:
       - trivy#v1.3.0: ~
 ```
+Define `--exit-code` option as a plugin parameter in  `pipeline.yml` to fail the pipeline when there are vulnerabilities:
 
+```yml
+steps:
+  - command: ls
+    plugins:
+      - trivy#v1.3.0:
+	exit-code: 1
+```
+
+Define `--severity` option as a plugin parameter in  `pipeline.yml` to scan specific type of vulnerabilities:	
+Below is an example for scanning `CRITICAL` vulnerabilities.
+
+```yml
+steps:
+  - command: ls
+    plugins:
+      - trivy#v1.3.0:
+	severity: "CRITICAL"
+```
 ## Developing
 
 Provide examples on how to modify and test, e.g.:
