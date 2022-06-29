@@ -3,3 +3,7 @@ steps:
     plugins:
       - docker-compose#v3.9.0:
           run: tests
+  - label: ":sparkles: Lint"
+    plugins:
+      plugin-linter#v3.0.0:
+        id: trivy 
