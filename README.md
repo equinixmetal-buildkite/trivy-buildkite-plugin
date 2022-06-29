@@ -1,5 +1,5 @@
 <dev align="centre">
-<img src="Buildkitepugin.png" width="600">
+<img src="buildkiteplugin.png" width="600">
 </div>
 
 
