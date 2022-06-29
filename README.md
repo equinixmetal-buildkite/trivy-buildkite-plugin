@@ -1,3 +1,8 @@
+<dev align="centre">
+<img src="Buildkitepugin.png" width="600">
+</div>
+
+
 # Buildkite Plugin Template
 
 Check the [buildkite organization](https://github.com/buildkite-plugins) or [website](https://buildkite.com/plugins) to see if your plugin already exists or we can contribute to it !
