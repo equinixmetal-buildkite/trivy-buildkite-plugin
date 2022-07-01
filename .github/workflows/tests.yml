@@ -1,0 +1,27 @@
+name: tests
+on: [push, pull_request]
+jobs:
+  plugin-tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    container:
+      image: buildkite/plugin-tester:latest
+      volumes:
+        - "${{github.workspace}}:/plugin"
+    steps:
+      - uses: actions/checkout@v2
+      - name: tests
+        run: bats tests/
+        working-directory: /plugin
+
+  plugin-lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    container:
+      image: buildkite/plugin-linter:latest
+      volumes:
+        - "${{github.workspace}}:/plugin"
+    steps:
+      - uses: actions/checkout@v2
+      - name: lint
+        run: lint --id trivy
