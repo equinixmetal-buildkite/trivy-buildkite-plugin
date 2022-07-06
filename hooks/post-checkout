@@ -20,7 +20,7 @@ fi
 # fi
 
 if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SEVERITY:-}" ]] ; then
-  export args+=("--severity \"${BUILDKITE_PLUGIN_TRIVY_SEVERITY}\"")
+  export args+=("--severity ${BUILDKITE_PLUGIN_TRIVY_SEVERITY}")
 fi
 echo "scanning filesystem"
 docker run -v $PWD:/workdir --rm $image fs ${args[@]} /workdir
