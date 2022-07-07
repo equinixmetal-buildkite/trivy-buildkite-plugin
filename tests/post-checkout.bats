@@ -42,7 +42,7 @@ setup() {
   export BUILDKITE_PLUGIN_TRIVY_SEVERITY="CRITICAL"
   export BUILDKITE_PLUGIN_TRIVY_EXIT_CODE=1
 
-  stub docker "run --rm -v $PWD/tests/testapp:/workdir  --rm aquasec/trivy:0.29.2 fs --severity $BUILDKITE_PLUGIN_TRIVY_SEVERITY --exit-code $BUILDKITE_PLUGIN_TRIVY_EXIT_CODE /workdir"
+  stub docker "run --rm -v $PWD/tests/testapp:/workdir  --rm aquasec/trivy:0.29.2 fs --severity $BUILDKITE_PLUGIN_TRIVY_SEVERITY /workdir"
 
   run "$PWD/hooks/post-checkout"
 
