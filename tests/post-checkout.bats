@@ -51,6 +51,32 @@ setup() {
   assert_output --partial "using non-default severity types"
 }
 
+@test "fs scan of a test app with non-default severity type CRITICAL and HIGH" {
+  export BUILDKITE_PLUGIN_TRIVY_SEVERITY="CRITICAL,HIGH"
+  export BUILDKITE_PLUGIN_TRIVY_EXIT_CODE=1
+
+  stub docker "run --rm -v $PWD/tests/testapp:/workdir  --rm aquasec/trivy:0.29.2 fs --severity $BUILDKITE_PLUGIN_TRIVY_SEVERITY /workdir"
+
+  run "$PWD/hooks/post-checkout"
+
+  assert_success
+  assert_output --partial "scanning filesystem"
+  assert_output --partial "using non-default severity types"
+}
+
+@test "fs scan of a test app with non-default severity type CRITICAL,HIGH and MEDIUM" {
+  export BUILDKITE_PLUGIN_TRIVY_SEVERITY="CRITICAL,HIGH,MEDIUM"
+  export BUILDKITE_PLUGIN_TRIVY_EXIT_CODE=1
+
+  stub docker "run --rm -v $PWD/tests/testapp:/workdir  --rm aquasec/trivy:0.29.2 fs --severity $BUILDKITE_PLUGIN_TRIVY_SEVERITY /workdir"
+
+  run "$PWD/hooks/post-checkout"
+
+  assert_success
+  assert_output --partial "scanning filesystem"
+  assert_output --partial "using non-default severity types"
+}
+
 @test "fs scan of a test app with non-default severity type and non-default exit-code options" {
   export BUILDKITE_PLUGIN_TRIVY_SEVERITY="CRITICAL"
   export BUILDKITE_PLUGIN_TRIVY_EXIT_CODE=1
