@@ -38,7 +38,7 @@ setup() {
   assert_output --partial "using exit-code=0 option while scanning"
 }
 
-@test "fs scan of a test app with non-default severity type" {
+@test "fs scan of a test app with non-default severity type CRITICAL" {
   export BUILDKITE_PLUGIN_TRIVY_SEVERITY="CRITICAL"
   export BUILDKITE_PLUGIN_TRIVY_EXIT_CODE=1
 
