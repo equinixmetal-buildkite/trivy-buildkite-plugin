@@ -1,6 +1,4 @@
 #!/bin/bash
-#docker run -v $PWD:/workdir  --rm aquasec/trivy:0.29.2 fs --exit-code 1 --security-checks vuln /workdir
-#docker run -v $PWD:/workdir  --rm aquasec/trivy:0.29.2 -h
 
 default_image="aquasec/trivy:0.29.2"
 image="${BUILDKITE_PLUGIN_TRIVY_IMAGE:-$default_image}"
