@@ -28,7 +28,7 @@ fi
 echo "scanning filesystem"
 docker run -v $PWD:/workdir --rm $image fs ${args[@]} /workdir
 
-if [[ -f $PWD/tests/testapp/Dockerfile ]]; then
+if [[ -f $PWD/Dockerfile ]]; then
   docker build -t local/${BUILDKITE_PIPELINE_ID}:${BUILDKITE_COMMIT} .
   echo "scanning container image"
   docker run -v /var/run/docker.sock:/var/run/docker.sock --rm $image image ${args[@]} local/${BUILDKITE_PIPELINE_ID}:${BUILDKITE_COMMIT}
