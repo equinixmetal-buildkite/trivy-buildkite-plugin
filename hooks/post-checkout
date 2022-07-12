@@ -30,4 +30,9 @@ if [[ -f $PWD/Dockerfile ]]; then
   docker build -t local/${BUILDKITE_PIPELINE_ID}:${BUILDKITE_COMMIT} .
   echo "scanning container image"
   docker run -v /var/run/docker.sock:/var/run/docker.sock --rm $image image ${args[@]} local/${BUILDKITE_PIPELINE_ID}:${BUILDKITE_COMMIT}
+elif [[ ${BUILDKITE_TESTING} ]]; then
+    cd $PWD/tests/testapp
+    docker build -t local/${BUILDKITE_PIPELINE_ID}:${BUILDKITE_COMMIT} .
+  echo "scanning container image"
+  docker run -v /var/run/docker.sock:/var/run/docker.sock --rm $image image ${args[@]} local/${BUILDKITE_PIPELINE_ID}:${BUILDKITE_COMMIT} 
 fi  
