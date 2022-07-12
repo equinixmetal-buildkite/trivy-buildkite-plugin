@@ -90,3 +90,16 @@ setup() {
   assert_output --partial "using non-default severity types"
   assert_output --partial "using exit-code=1 option while scanning"
 }
+
+@test "scan of a test application image" {
+  export BUILDKITE_PIPELINE_ID=12345
+  export BUILDKITE_COMMIT=67890
+  export BUILDKITE_TESTING=true
+
+  stub docker "run --rm -v $PWD/tests/testapp:/workdir  --rm aquasec/trivy:0.29.2 image ${BUILDKITE_PIPELINE_ID}:${BUILDKITE_COMMIT}"
+
+  run "$PWD/hooks/post-checkout"
+
+  assert_success
+  assert_output --partial "scanning container image"
+}
