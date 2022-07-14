@@ -24,7 +24,7 @@ if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SEVERITY:-}" ]] ; then
   echo "using non-default severity types"
 fi
 echo "scanning filesystem"
-docker run -v $PWD:/workdir --rm $image fs ${args[@]} /workdir
+docker run -v $PWD:/workdir --rm $image fs ${args[@]} --security-checks vuln,config /workdir
 
 if [[ -f $PWD/Dockerfile ]]; then
   docker build -t local/${BUILDKITE_PIPELINE_ID}:${BUILDKITE_COMMIT} .
