@@ -14,4 +14,6 @@ configuration:
       type: boolean
     image:      
       type: string
+    security-checks:
+      type: string
   additionalProperties: false
