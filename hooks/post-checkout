@@ -38,21 +38,19 @@ docker run -v "${PWD}":/workdir --rm "$image" fs "${args[@]}" "${fsargs[@]}" /wo
 
 
 if [[ -n "${BUILDKITE_PLUGIN_TRIVY_IMAGE_REF:-}" ]] ; then
+  echo "using image from parameters"
   if [[ "${BUILDKITE_TESTING}" ]]; then
   	docker pull "${BUILDKITE_PLUGIN_TRIVY_IMAGE_REF}"
-  	echo "using image from parameters"
-  	docker run -v /var/run/docker.sock:/var/run/docker.sock --rm "${image}" image "${args[@]}" "${BUILDKITE_PLUGIN_TRIVY_IMAGE_REF}"
-  	exit 0
   fi
-  echo "using image from parameters"
-  docker run -v /var/run/docker.sock:/var/run/docker.sock --rm "$image" image "${args[@]}" "${BUILDKITE_PLUGIN_TRIVY_IMAGE_REF}"
-elif [[ -f $PWD/Dockerfile ]]; then
-  docker build -t local/"${BUILDKITE_PIPELINE_ID}":"${BUILDKITE_COMMIT}" .
-  echo "scanning container image"
-  docker run -v /var/run/docker.sock:/var/run/docker.sock --rm "$image" image "${args[@]}" local/"${BUILDKITE_PIPELINE_ID}":"${BUILDKITE_COMMIT}"
-elif [[ ${BUILDKITE_TESTING} ]]; then
-  cd "${PWD}"/tests/testapp || exit
-  docker build -t local/"${BUILDKITE_PIPELINE_ID}":"${BUILDKITE_COMMIT}" .
-  echo "scanning container image"
-  docker run -v /var/run/docker.sock:/var/run/docker.sock --rm "$image" image "${args[@]}" local/"${BUILDKITE_PIPELINE_ID}":"${BUILDKITE_COMMIT}"
+else
+export BUILDKITE_PLUGIN_TRIVY_IMAGE_REF=local/"${BUILDKITE_PIPELINE_ID}":"${BUILDKITE_COMMIT}"
+  if [[ -f $PWD/Dockerfile ]]; then
+    docker build -t "${BUILDKITE_PLUGIN_TRIVY_IMAGE_REF}" .
+  elif [[ ${BUILDKITE_TESTING} ]]; then
+    cd "${PWD}"/tests/testapp || exit
+    docker build -t "${BUILDKITE_PLUGIN_TRIVY_IMAGE_REF}" . 
+  fi
 fi
+
+echo "scanning container image"
+docker run -v /var/run/docker.sock:/var/run/docker.sock --rm "${image}" image "${args[@]}" "${BUILDKITE_PLUGIN_TRIVY_IMAGE_REF}"
