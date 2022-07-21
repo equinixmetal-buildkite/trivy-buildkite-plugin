@@ -28,7 +28,7 @@ steps:
   - command: ls
     plugins:
       - trivy#v1.12.0:
-	exit-code: 1
+        exit-code: 1
 ```
 
 Define `--severity` option as a plugin parameter in  `pipeline.yml` to scan specific type of vulnerabilities:	
@@ -39,7 +39,7 @@ steps:
   - command: ls
     plugins:
       - trivy#v1.12.0:
-	severity: "CRITICAL"
+        severity: "CRITICAL"
 ```
 ## Developing
 
