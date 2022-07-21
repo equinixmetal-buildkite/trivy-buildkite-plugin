@@ -16,4 +16,6 @@ configuration:
       type: string
     security-checks:
       type: string
+    image-ref:
+      type: string
   additionalProperties: false

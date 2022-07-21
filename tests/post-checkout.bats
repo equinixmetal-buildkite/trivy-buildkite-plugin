@@ -135,3 +135,14 @@ setup() {
   assert_success
   assert_output --partial "scanning container image"
 }
+
+@test "scan of a custom image" {
+  export BUILDKITE_PLUGIN_TRIVY_IMAGE_REF="nginx"
+  export BUILDKITE_TESTING=true
+  stub docker "run --rm -v $PWD/tests/testapp:/workdir  --rm aquasec/trivy:0.29.2 image ${BUILDKITE_PLUGIN_TRIVY_IMAGE_SCAN}"
+
+  run "$PWD/hooks/post-checkout"
+
+  assert_success
+  assert_output --partial "using image from parameters"
+}
