@@ -12,6 +12,10 @@ configuration:
       type: string
     ignore-unfixed:
       type: boolean
-    image:      
+    trivy-version:      
+      type: string
+    security-checks:
+      type: string
+    image-ref:
       type: string
   additionalProperties: false
