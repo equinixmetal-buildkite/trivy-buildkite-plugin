@@ -1,17 +1,69 @@
 #!/bin/bash
 
-default_version="0.29.2"
-version="${BUILDKITE_PLUGIN_TRIVY_VERSION:-$default_version}"
-image="aquasec/trivy:${version}"
+DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+
+# shellcheck source=lib/trivy-env.sh
+. "$DIR/../lib/trivy-env.sh"
 
 args=()
 fsargs=()
 
+# Helper functions
+##################
+
+fail_with_message() {
+  display_error "$1"
+  exit 1
+}
+
+display_error() {
+  message="$1"
+  echo "🚨 $message" >&2
+  buildkite-agent annotate --style error "$message<br />" --context publish --append
+}
+
+display_success() {
+  message="$1"
+  echo "$message"
+  buildkite-agent annotate --style success "$message<br />" --context publish --append
+}
+
+docker_metadata_list_into_result() {
+    # Can be tags or labels
+    field="$1"
+    filepath="$DOCKER_METADATA_DIR/$field"
+
+    if [[ ! -f "$filepath" ]] ; then
+      fail_with_message "No '$field' directory found in $DOCKER_METADATA_DIR"
+    fi
+
+    result=()
+
+    for line in $(cat "$filepath") ; do
+      result+=("$line")
+    done
+}
+
+docker_metadata_file_exists() {
+  file=$1
+  if [[ ! -d "${DOCKER_METADATA_DIR:-}" ]] ; then
+    return 1
+  fi
+  if [[ ! -f "$DOCKER_METADATA_DIR/$file" ]] ; then
+    return 1
+  fi
+  return 0
+}
+
+
+# Hook
+######
+
 if [[ "${BUILDKITE_PLUGIN_TRIVY_EXIT_CODE:-0}" -eq 1 ]] ; then
-  args+=("--exit-code 1")
+  args+=("--exit-code" "1")
   echo "using exit-code=1 option while scanning"
 else
-  args+=("--exit-code 0")
+  args+=("--exit-code" "0")
   echo "using exit-code=0 option while scanning"
 fi
 
@@ -22,36 +74,68 @@ fi
 # fi
 
 if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SEVERITY:-}" ]] ; then
-  args+=("--severity ${BUILDKITE_PLUGIN_TRIVY_SEVERITY}")
+  args+=("--severity" "${BUILDKITE_PLUGIN_TRIVY_SEVERITY}")
   echo "using non-default severity types"
 fi
 
 if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS:-}" ]] ; then
-  fsargs+=("--security-checks ${BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS}")
+  fsargs+=("--security-checks" "${BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS}")
   echo "using $BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS security checks"
 else
   echo "using default security checks"
-  fsargs+=("--security-checks vuln,config")
+  fsargs+=("--security-checks" "vuln,config")
 fi
 
 echo "scanning filesystem"
 docker run -v "${PWD}":/workdir --rm "$image" fs "${args[@]}" "${fsargs[@]}" /workdir
+status=$?
+
+if [[ $status -ne 0 ]]; then
+  display_error "trivy found vulnerabilities in repository. See the job output for details."
+else
+  display_success "trivy didn't find any relevant vulnerabilities in the repository"
+fi
 
 
-if [[ -n "${BUILDKITE_PLUGIN_TRIVY_IMAGE_REF:-}" ]] ; then
-  echo "using image from parameters"
-  if [[ "${BUILDKITE_TESTING}" ]]; then
-  	docker pull "${BUILDKITE_PLUGIN_TRIVY_IMAGE_REF}"
+# Verify container image (if any)
+targetimageref="${BUILDKITE_PLUGIN_TRIVY_IMAGE_REF:-}"
+if [[ -z "$targetimageref" ]] ; then
+
+  # Parse docker-metadata references
+  if docker_metadata_file_exists tags ; then
+    if docker_metadata_list_into_result tags ; then
+      # We only use the first tag that we got from docker-metadata.
+      # In theory, all the tags coming from here point to the same
+      # image.
+      targetimageref="${result[0]}"
+      unset result
+    fi
   fi
 else
-export BUILDKITE_PLUGIN_TRIVY_IMAGE_REF=local/"${BUILDKITE_PIPELINE_ID}":"${BUILDKITE_COMMIT}"
-  if [[ -f $PWD/Dockerfile ]]; then
-    docker build -t "${BUILDKITE_PLUGIN_TRIVY_IMAGE_REF}" .
-  elif [[ ${BUILDKITE_TESTING} ]]; then
-    cd "${PWD}"/tests/testapp || exit
-    docker build -t "${BUILDKITE_PLUGIN_TRIVY_IMAGE_REF}" . 
-  fi
+  echo "using image '$targetimageref' from parameters"
+fi
+
+# We can't parse an image if we have no references to parse.
+# This might be intended, so let's just pass.
+if [[ -z "$targetimageref" ]]; then
+  echo "no image to scan"
+  display_success "No container image was scanned due to a lack of an image reference. This is fine."
+  exit 0
+fi
+
+# If the image is not present locally, pull it
+if [[ -z "$(docker images -q $targetimageref 2> /dev/null)" ]]; then
+  docker pull $targetimageref
+else
+  echo "image '$targetimageref' already present locally"
 fi
 
 echo "scanning container image"
-docker run -v /var/run/docker.sock:/var/run/docker.sock --rm "${image}" image "${args[@]}" "${BUILDKITE_PLUGIN_TRIVY_IMAGE_REF}"
+docker run -v /var/run/docker.sock:/var/run/docker.sock --rm "${image}" image "${args[@]}" "$targetimageref"
+status=$?
+
+if [[ $status -ne 0 ]]; then
+  fail_with_message "trivy found vulnerabilities in the container image. See the job output for details."
+else
+  display_success "trivy didn't find any relevant vulnerabilities in the container image"
+fi
