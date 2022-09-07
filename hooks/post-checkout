@@ -39,9 +39,9 @@ docker_metadata_list_into_result() {
 
     result=()
 
-    for line in $(cat "$filepath") ; do
+    while read -r line; do
       result+=("$line")
-    done
+    done < "$filepath"
 }
 
 docker_metadata_file_exists() {
@@ -124,8 +124,8 @@ if [[ -z "$targetimageref" ]]; then
 fi
 
 # If the image is not present locally, pull it
-if [[ -z "$(docker images -q $targetimageref 2> /dev/null)" ]]; then
-  docker pull $targetimageref
+if [[ -z $(docker images -q "$targetimageref" 2> /dev/null) ]]; then
+  docker pull "$targetimageref"
 else
   echo "image '$targetimageref' already present locally"
 fi
