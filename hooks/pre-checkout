@@ -1,0 +1,296 @@
+#!/bin/bash
+
+# This portion of the plugin looks for the "trivy" executable in PATH.
+# If it cannot locate the executable, it downloads it from GitHub,
+# authenticates it, and then copies it to one of the following directories:
+#
+# - The current working directory (default)
+# - ${HOME}/bin/ (if the "install-in-home-bin" option is set to "true",
+#   "TRUE", "yes", or "YES")
+#
+# The script then writes the executable's file path to stdout.
+#
+# Required executables / bash built-ins:
+#
+# - exit
+# - echo
+# - export
+# - if / [[ ]]
+# - buildkite-agent
+# - uname
+# - curl
+# - sha256sum || openssl
+# - mktemp
+# - tar
+# - which
+# - mkdir
+
+export TRIVY_DEFAULT_VERSION="0.29.2"
+export TRIVY_VERSION="${BUILDKITE_PLUGIN_TRIVY_VERSION:-$TRIVY_DEFAULT_VERSION}"
+
+fail_with_message() {
+  display_error "$1"
+  exit 1
+}
+
+display_error() {
+  message="$1"
+  echo "🚨 $message" >&2
+  buildkite-agent annotate --style error "$message<br />" --context publish --append
+}
+
+display_success() {
+  message="$1"
+  echo "$message"
+  buildkite-agent annotate --style success "$message<br />" --context publish --append
+}
+
+# trivy_os_cpu_string retrieves information from the runtime
+# environment and uses it to build the OS and CPU string that
+# appears in each trivy release's file name.
+#
+# For example, the string for "trivy_0.31.3_FreeBSD-32bit.tar.gz" 
+# would be "FreeBSD-32bit".
+trivy_os_cpu_string() {
+  local UNAME_INFO="$(uname -a)"
+  local RUNTIME_OS=""
+  local RUNTIME_CPU=""
+
+  case "${UNAME_INFO}" in
+    *Darwin*)
+      RUNTIME_OS=macOS
+      ;;
+    *Linux*)
+      RUNTIME_OS=Linux
+      ;;
+    *FreeBSD*)
+      RUNTIME_OS=FreeBSD
+      ;;
+    *)
+      fail_with_message "failed to determine current computer's operating system"
+      return 1
+      ;;
+  esac
+
+  case "${UNAME_INFO}" in
+    *amd64*)
+      RUNTIME_CPU=64bit
+      ;;
+    *x86_64*)
+      RUNTIME_CPU=64bit
+      ;;
+    *arm64*)
+      RUNTIME_CPU=ARM64
+      ;;
+    *)
+      fail_with_message "failed to determine current computer's cpu"
+      return 2
+      ;;
+  esac
+
+  echo "${RUNTIME_OS}-${RUNTIME_CPU}"
+
+  return 0
+}
+
+# trivy_tar_url builds the tar.gz URL for the specified version
+# of trivy and writes it to stdout.
+#
+# Any non-zero status code indicates an error.
+#
+# For example:
+# https://github.com/aquasecurity/trivy/releases/download/v0.31.3/trivy_0.31.3_FreeBSD-64bit.tar.gz
+trivy_tar_url() {
+  local VERSION="${1}"
+  [[ -z "${VERSION}" ]] && return 1
+
+  local OS_CPU="${2}"
+  [[ -z "${OS_CPU}" ]] && return 2
+
+  local BASE_URL="https://github.com/aquasecurity/trivy/releases/download"
+  local URL="${BASE_URL}/v${VERSION}/trivy_${VERSION}_${OS_CPU}.tar.gz"
+
+  echo "${URL}"
+  return 0
+}
+
+# trivy_hashes_url builds the hashes URL for the specified version
+# of trivy and writes it to stdout.
+#
+# Any non-zero status code indicates an error.
+#
+# For example:
+# https://github.com/aquasecurity/trivy/releases/download/v0.31.3/trivy_0.31.3_checksums.txt
+trivy_hashes_url() {
+  local VERSION="${1}"
+  [[ -z "${VERSION}" ]] && return 1
+
+  local BASE_URL="https://github.com/aquasecurity/trivy/releases/download"
+  local URL="${BASE_URL}/v${VERSION}/trivy_${VERSION}_checksums.txt"
+
+  echo "${URL}"
+  return 0
+}
+
+# sha2_256_hash_file hashes the specified file using the provided
+# SHA2-256 hash string, returning status code zero on success.
+#
+# Any non-zero status code indicates an error.
+sha2_256_hash_file() {
+  local FILE="${1}"
+  [[ -z "${FILE}" ]] && return 1
+  [[ ! -f "${FILE}" ]] && return 2
+
+  local HASH="${2}"
+  [[ -z "${HASH}" ]] && return 3
+
+  local RESULT=""
+  if which sha256sum 2>&1 > /dev/null; then
+    # $ RESULT="$(sha256sum /proc/self/cmdline)"
+    # $ echo "${RESULT}"
+    # 31d14183b4... /proc/self/cmdline
+    # $ RESULT="${RESULT% *}"
+    # $ echo "${RESULT}"
+    # 31d14183b4...
+    RESULT="$(sha256sum "${FILE}")"
+    RESULT="${RESULT% *}"
+  elif which openssl 2>&1 > /dev/null; then
+    # $ RESULT="$(openssl sha256 /proc/self/cmdline)"
+    # $ echo "${RESULT}"
+    # SHA256(/proc/self/cmdline)= fbc0b267807d5d...
+    # $ RESULT="${RESULT##* }"
+    # $ echo "${RESULT}"
+    # fbc0b267807d5d...
+    RESULT="$(openssl sha256 "${FILE}")"
+    RESULT="${RESULT##* }"
+  else
+    return 4
+  fi
+
+  [[ -z "${RESULT}" ]] && return 41
+
+  [[ "${HASH}" == "${RESULT}" ]] && return 0
+
+  return 66
+}
+
+# download_trivy downloads the specified version of trivy from GitHub and
+# authenticates it using the hashes file stored with the GitHub # release
+# (yes, this is not ideal). Callers can also specify an optional file
+# path to move the executable to. If no file path is specified, the function
+# leaves the executable in a temporary directory.
+#
+# The function writes the executable's final file path to stdout.
+download_trivy() {
+  local VERSION="${1}"
+  [[ -z "${VERSION}" ]] \
+    && fail_with_message "download_trivy: trivy version not specified"
+
+  local OPTIONAL_DEST="${2}"
+
+  local TRIVY_OS_CPU="$(trivy_os_cpu_string)"
+
+  local HASHES_URL="$(trivy_hashes_url "${VERSION}")"
+  [[ "${?}" -ne 0 ]] \
+    && fail_with_message "download_trivy: failed to create hashes url"
+
+  local TAR_URL=$(trivy_tar_url "${VERSION}" "${TRIVY_OS_CPU}")
+  [[ "${?}" -ne 0 ]] \
+    && fail_with_message "download_trivy: failed to create tar url"
+
+  local HASHES="$(curl --fail -L "${HASHES_URL}")"
+  [[ "${?}" -ne 0 ]] \
+    && fail_with_message "download_trivy: failed to download hashes"
+
+  [[ -z "${HASHES}" ]] \
+    && fail_with_message "download_trivy: downloaded hashes file is empty"
+
+  local TAR_NAME="${TAR_URL##*/}"
+
+  # Order of lines will be:
+  #   <hash-string>
+  #   <filename>
+  local HASH=""
+  local CURRENT_VALUE=""
+  local LAST_VALUE=""
+  for CURRENT_VALUE in ${HASHES}; do
+    if [[ "${CURRENT_VALUE}" == "${TAR_NAME}" ]] ; then
+      HASH="${LAST_VALUE}"
+      break
+    fi
+    LAST_VALUE="${CURRENT_VALUE}"
+  done
+
+  [[ -z "${HASH}" ]] \
+    && fail_with_message "download_trivy: failed to find matching hash for '${TAR_NAME}'"
+
+  local TEMP_DIR="$(mktemp -d)"
+  [[ "${?}" -ne 0 ]] \
+    && fail_with_message "download_trivy: failed to create temp dir"
+
+  local FINAL_TAR="${TEMP_DIR}/temp-trivy.tar.gz"
+  curl --fail -L -o "${FINAL_TAR}" "${TAR_URL}" \
+    || fail_with_message "download_trivy: failed to download trivy to '${FINAL_TAR}'"
+
+  sha2_256_hash_file "${FINAL_TAR}" "${HASH}" \
+    || fail_with_message "download_trivy: failed to verify '${FINAL_TAR}' (return code: $?)"
+
+  tar -C "${TEMP_DIR}" -xzvf "${FINAL_TAR}" \
+    || fail_with_message "download_trivy: failed to un-tar '${FINAL_TAR}' (return code: $?)"
+
+  local TRIVY_EXE="${TEMP_DIR}/trivy"
+  [[ -f "${TRIVY_EXE}" ]] \
+    || fail_with_message "download_trivy: '${TAR_NAME}' should contain a file named 'trivy' - it does not"
+
+  if [[ -z "${OPTIONAL_DEST}" ]] ; then
+    echo "${TRIVY_EXE}"
+    return 0
+  fi
+
+  mv -v "${TRIVY_EXE}" "${OPTIONAL_DEST}" \
+    || fail_with_message "download_trivy: failed to move '${TRIVY_EXE}' to '${OPTIONAL_DEST}'"
+
+  return 0
+}
+
+# find_or_download_trivy searches for the trivy executable in PATH.
+# If the function does not find an executable, it installs trivy
+# from GitHub.
+find_or_download_trivy() {
+  local TRIVY_EXE="$(which trivy)"
+  if [[ "$?" -eq 0 ]] && [[ -f "${TRIVY_EXE}" ]] ; then
+    echo "${TRIVY_EXE}"
+    return 0
+  fi
+
+  # TODO: idk.
+  local INSTALL_DIR="${PWD}"
+  local HOME_INSTALL=""
+  case "${BUILDKITE_PLUGIN_TRIVY_INSTALL_IN_HOME_BIN}" in
+    "yes")
+      HOME_INSTALL=true
+      ;;
+    "YES")
+      HOME_INSTALL=true
+      ;;
+    "true")
+      HOME_INSTALL=true
+      ;;
+    "TRUE")
+      HOME_INSTALL=true
+      ;;
+  esac
+
+  if [[ -n "${HOME_INSTALL}" ]] ; then
+    INSTALL_DIR="${HOME}/bin"
+    mkdir -m 0700 "${INSTALL_DIR}" \
+      || fail_with_message "failed to create install dir at '${INSTALL_DIR}'"
+  fi
+
+  # Note: Any error in the next function results in the script
+  # exiting with a non-zero status code.
+  echo "$(download_trivy "${TRIVY_VERSION}" "${INSTALL_DIR}/trivy")"
+  return 0
+}
+
+find_or_download_trivy
