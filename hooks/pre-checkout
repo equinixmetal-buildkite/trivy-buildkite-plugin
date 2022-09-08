@@ -40,7 +40,7 @@ REMOVE_FILE_ON_ERR=""
 die() {
   [[ -f "${REMOVE_FILE_ON_ERR}" ]] && rm "${REMOVE_FILE_ON_ERR}"
   display_error "$2"
-  exit $1
+  exit "$1"
 }
 
 display_error() {
