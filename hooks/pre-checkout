@@ -10,6 +10,14 @@
 #
 # The script then writes the executable's file path to stdout.
 #
+# The following environment variables are set and (theoretically)
+# available to subsequent buildkite hooks:
+#
+# - TRIVY_VERSION     - The selected trivy version
+# - TRIVY_EXE_PATH    - Set to the selected trivy executable's file path
+# - TRIVY_EXE_IN_TEMP - Set to "true" if the trivy executable is stored
+#                       in a temporary directory
+#
 # Required executables / bash built-ins:
 #
 # - exit
@@ -27,8 +35,11 @@
 
 readonly TRIVY_DEFAULT_VERSION="0.29.2"
 export TRIVY_VERSION="${BUILDKITE_PLUGIN_TRIVY_VERSION:-$TRIVY_DEFAULT_VERSION}"
+REMOVE_FILE_ON_ERR=""
 
+# TODO: Accept exit code as function argument.
 fail_with_message() {
+  [[ -f "${REMOVE_FILE_ON_ERR}" ]] && rm "${REMOVE_FILE_ON_ERR}"
   display_error "$1"
   exit 1
 }
@@ -197,29 +208,24 @@ sha2_256_hash_file() {
 
 # download_trivy downloads the specified version of trivy from GitHub and
 # authenticates it using the hashes file stored with the GitHub release
-# (yes, this is not ideal). Callers can also specify an optional file
-# path to move the executable to. If no file path is specified, the
-# function leaves the executable in a temporary directory.
+# (yes, this is not ideal). The function saves the executable in a temporary
+# directory. The trivy executable's file path is written to stdout.
 #
-# The function writes the executable's final file path to stdout.
+# This function exits the script with a non-zero exit status code
+# if an error occurs.
 download_trivy() {
   local VERSION="${1}"
   [[ -z "${VERSION}" ]] \
     && fail_with_message "download_trivy: trivy version not specified"
 
-  local OPTIONAL_DEST="${2}"
-
   local TRIVY_OS_CPU="$(trivy_os_cpu_string)"
 
   local HASHES_URL="$(trivy_hashes_url "${VERSION}")"
-  [[ "${?}" -ne 0 ]] \
-    && fail_with_message "download_trivy: failed to create hashes url"
 
   local TAR_URL=$(trivy_tar_url "${VERSION}" "${TRIVY_OS_CPU}")
-  [[ "${?}" -ne 0 ]] \
-    && fail_with_message "download_trivy: failed to create tar url"
 
-  local HASHES="$(curl --fail -L "${HASHES_URL}")"
+  local HASHES=""
+  HASHES="$(curl --fail -L "${HASHES_URL}")"
   [[ "${?}" -ne 0 ]] \
     && fail_with_message "download_trivy: failed to download hashes"
 
@@ -245,31 +251,26 @@ download_trivy() {
   [[ -z "${HASH}" ]] \
     && fail_with_message "download_trivy: failed to find matching hash for '${TAR_NAME}'"
 
-  local TEMP_DIR="$(mktemp -d)"
+  local TEMP_DIR=""
+  TEMP_DIR="$(mktemp -d)"
   [[ "${?}" -ne 0 ]] \
     && fail_with_message "download_trivy: failed to create temp dir"
 
   local FINAL_TAR="${TEMP_DIR}/temp-trivy.tar.gz"
+  REMOVE_FILE_ON_ERR="${FINAL_TAR}"
   curl --fail -L -o "${FINAL_TAR}" "${TAR_URL}" \
     || fail_with_message "download_trivy: failed to download trivy to '${FINAL_TAR}'"
 
-  sha2_256_hash_file "${FINAL_TAR}" "${HASH}" \
-    || fail_with_message "download_trivy: failed to verify '${FINAL_TAR}' (return code: $?)"
+  sha2_256_hash_file "${FINAL_TAR}" "${HASH}"
 
   tar -C "${TEMP_DIR}" -xzvf "${FINAL_TAR}" \
     || fail_with_message "download_trivy: failed to un-tar '${FINAL_TAR}' (return code: $?)"
 
-  local TRIVY_EXE="${TEMP_DIR}/trivy"
-  [[ -f "${TRIVY_EXE}" ]] \
-    || fail_with_message "download_trivy: '${TAR_NAME}' should contain a file named 'trivy' - it does not"
+  local EXE="${TEMP_DIR}/trivy"
+  [[ -f "${EXE}" ]] \
+    || fail_with_message "download_trivy: '${TAR_NAME}' does not contain a file named 'trivy'"
 
-  if [[ -z "${OPTIONAL_DEST}" ]] ; then
-    echo "${TRIVY_EXE}"
-    return 0
-  fi
-
-  mv -v "${TRIVY_EXE}" "${OPTIONAL_DEST}" \
-    || fail_with_message "download_trivy: failed to move '${TRIVY_EXE}' to '${OPTIONAL_DEST}'"
+  echo "${EXE}"
 
   return 0
 }
@@ -278,14 +279,19 @@ download_trivy() {
 # If the function does not find an executable, it installs trivy
 # from GitHub.
 find_or_download_trivy() {
-  local TRIVY_EXE="$(which trivy)"
-  if [[ "$?" -eq 0 ]] && [[ -f "${TRIVY_EXE}" ]] ; then
-    echo "${TRIVY_EXE}"
+  local WHICH_TRIVY_EXE=""
+  WHICH_TRIVY_EXE="$(which trivy)"
+  if [[ "$?" -eq 0 ]] && [[ -f "${WHICH_TRIVY_EXE}" ]] ; then
+    echo "${WHICH_TRIVY_EXE}"
     return 0
   fi
 
+  # Note: Any error in the next function results in the script
+  # exiting with a non-zero status code.
+  local TRIVY_TMP_EXE=""
+  TRIVY_TMP_EXE="$(download_trivy "${TRIVY_VERSION}")"
+
   # TODO: idk.
-  local INSTALL_DIR="${PWD}"
   local HOME_INSTALL=""
   case "${BUILDKITE_PLUGIN_TRIVY_INSTALL_IN_HOME_BIN}" in
     "yes")
@@ -302,16 +308,30 @@ find_or_download_trivy() {
       ;;
   esac
 
+  local FINAL_TRIVY_EXE=""
   if [[ -n "${HOME_INSTALL}" ]] ; then
-    INSTALL_DIR="${HOME}/bin"
+    local INSTALL_DIR="${HOME}/bin"
+
     mkdir -m 0700 "${INSTALL_DIR}" \
       || fail_with_message "failed to create install dir at '${INSTALL_DIR}'"
+
+    FINAL_TRIVY_EXE="${INSTALL_DIR}/trivy"
+
+    mv "${TRIVY_TMP_EXE}" "${FINAL_TRIVY_EXE}" 1> /dev/null \
+      || fail_with_message "failed to move '${TRIVY_TMP_EXE}' to '${FINAL_TRIVY_EXE}'"
+  else
+    export TRIVY_EXE_IN_TEMP="true"
+
+    FINAL_TRIVY_EXE="${TRIVY_TMP_EXE}"
   fi
 
-  # Note: Any error in the next function results in the script
-  # exiting with a non-zero status code.
-  echo "$(download_trivy "${TRIVY_VERSION}" "${INSTALL_DIR}/trivy")"
+  echo "${FINAL_TRIVY_EXE}"
+
   return 0
 }
 
-find_or_download_trivy
+TRIVY_EXE_PATH="$(find_or_download_trivy)"
+
+echo "${TRIVY_EXE_PATH}"
+
+export TRIVY_EXE_PATH
