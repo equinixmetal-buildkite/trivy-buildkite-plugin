@@ -51,8 +51,15 @@ display_success() {
 #
 # For example, the string for "trivy_0.31.3_FreeBSD-32bit.tar.gz" 
 # would be "FreeBSD-32bit".
+#
+# This function exits the script with a non-zero exit status code
+# if an error occurs.
 trivy_os_cpu_string() {
-  local UNAME_INFO="$(uname -a)"
+  local UNAME_INFO=""
+  if ! UNAME_INFO="$(uname -a)"; then
+    fail_with_message "failed to run uname"
+  fi
+
   local RUNTIME_OS=""
   local RUNTIME_CPU=""
 
