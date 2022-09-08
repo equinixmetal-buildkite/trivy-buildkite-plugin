@@ -16,7 +16,7 @@ export image="aquasec/trivy:${version}"
   stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
     "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
 
-  run "$PWD/hooks/pre-artifact"
+  run "$PWD/hooks/post-command"
 
   assert_success
   assert_output --partial "scanning filesystem"
@@ -34,7 +34,7 @@ export image="aquasec/trivy:${version}"
   stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
     "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
 
-  run "$PWD/hooks/pre-artifact"
+  run "$PWD/hooks/post-command"
 
   assert_success
   assert_output --partial "scanning filesystem"
@@ -52,7 +52,7 @@ export image="aquasec/trivy:${version}"
   stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
     "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
 
-  run "$PWD/hooks/pre-artifact"
+  run "$PWD/hooks/post-command"
 
   assert_success
   assert_output --partial "scanning filesystem"
@@ -70,7 +70,7 @@ export image="aquasec/trivy:${version}"
   stub buildkite-agent "annotate --style error \"trivy found vulnerabilities in repository. See the job output for details.<br />\" --context publish --append : echo fs scan failure" \
     "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
 
-  run "$PWD/hooks/pre-artifact"
+  run "$PWD/hooks/post-command"
 
   assert_success
   assert_output --partial "scanning filesystem"
@@ -89,7 +89,7 @@ export image="aquasec/trivy:${version}"
   stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
     "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
 
-  run "$PWD/hooks/pre-artifact"
+  run "$PWD/hooks/post-command"
 
   assert_success
   assert_output --partial "scanning filesystem"
@@ -107,7 +107,7 @@ export image="aquasec/trivy:${version}"
   stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
     "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
 
-  run "$PWD/hooks/pre-artifact"
+  run "$PWD/hooks/post-command"
 
   assert_success
   assert_output --partial "scanning filesystem"
@@ -125,7 +125,7 @@ export image="aquasec/trivy:${version}"
   stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
     "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
 
-  run "$PWD/hooks/pre-artifact"
+  run "$PWD/hooks/post-command"
 
   assert_success
   assert_output --partial "scanning filesystem"
@@ -141,7 +141,7 @@ export image="aquasec/trivy:${version}"
   stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
     "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
 
-  run "$PWD/hooks/pre-artifact"
+  run "$PWD/hooks/post-command"
 
   assert_success
   assert_output --partial "scanning filesystem"
@@ -157,7 +157,7 @@ export image="aquasec/trivy:${version}"
   stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
     "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
 
-  run "$PWD/hooks/pre-artifact"
+  run "$PWD/hooks/post-command"
 
   assert_success
   assert_output --partial "scanning filesystem"
@@ -173,7 +173,7 @@ export image="aquasec/trivy:${version}"
   stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
     "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
 
-  run "$PWD/hooks/pre-artifact"
+  run "$PWD/hooks/post-command"
 
   assert_success
   assert_output --partial "scanning filesystem"
@@ -193,7 +193,7 @@ export image="aquasec/trivy:${version}"
   stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
     "annotate --style success \"trivy didn't find any relevant vulnerabilities in the container image<br />\" --context publish --append : echo container image scan success" \
 
-  run "$PWD/hooks/pre-artifact"
+  run "$PWD/hooks/post-command"
 
   assert_success
   assert_output --partial "scanning container image"
@@ -213,7 +213,7 @@ export image="aquasec/trivy:${version}"
   stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
     "annotate --style success \"trivy didn't find any relevant vulnerabilities in the container image<br />\" --context publish --append : echo container image scan success" \
 
-  run "$PWD/hooks/pre-artifact"
+  run "$PWD/hooks/post-command"
 
   assert_success
   assert_output --partial "scanning container image"
@@ -234,7 +234,7 @@ export image="aquasec/trivy:${version}"
   stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
     "annotate --style error \"trivy found vulnerabilities in the container image. See the job output for details.<br />\" --context publish --append : echo container image scan failure" \
 
-  run "$PWD/hooks/pre-artifact"
+  run "$PWD/hooks/post-command"
 
   assert_failure
   assert_output --partial "scanning container image"
@@ -258,7 +258,7 @@ export image="aquasec/trivy:${version}"
   stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
     "annotate --style success \"trivy didn't find any relevant vulnerabilities in the container image<br />\" --context publish --append : echo container image scan success" \
 
-  run "$PWD/hooks/pre-artifact"
+  run "$PWD/hooks/post-command"
 
   assert_success
   assert_output --partial "scanning container image"
@@ -282,7 +282,7 @@ export image="aquasec/trivy:${version}"
   stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
     "annotate --style success \"trivy didn't find any relevant vulnerabilities in the container image<br />\" --context publish --append : echo container image scan success" \
 
-  run "$PWD/hooks/pre-artifact"
+  run "$PWD/hooks/post-command"
 
   assert_success
   assert_output --partial "scanning container image"
