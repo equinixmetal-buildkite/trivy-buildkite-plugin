@@ -25,7 +25,7 @@
 # - which
 # - mkdir
 
-export TRIVY_DEFAULT_VERSION="0.29.2"
+readonly TRIVY_DEFAULT_VERSION="0.29.2"
 export TRIVY_VERSION="${BUILDKITE_PLUGIN_TRIVY_VERSION:-$TRIVY_DEFAULT_VERSION}"
 
 fail_with_message() {
