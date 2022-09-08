@@ -149,14 +149,19 @@ trivy_hashes_url() {
 # sha2_256_hash_file hashes the specified file using the provided
 # SHA2-256 hash string, returning status code zero on success.
 #
-# Any non-zero status code indicates an error.
+# This function exits the script with a non-zero exit status code
+# if an error occurs.
 sha2_256_hash_file() {
   local FILE="${1}"
-  [[ -z "${FILE}" ]] && return 1
-  [[ ! -f "${FILE}" ]] && return 2
+  [[ -z "${FILE}" ]] \
+    && fail_with_message "sha2_256_hash_file: file argument is missing or empty"
+
+  [[ ! -f "${FILE}" ]] \
+    && fail_with_message "sha2_256_hash_file: target file ('${FILE}') does not exist"
 
   local HASH="${2}"
-  [[ -z "${HASH}" ]] && return 3
+  [[ -z "${HASH}" ]] \
+    && fail_with_message "sha2_256_hash_file: hash argument is missing or empty"
 
   local RESULT=""
   if which sha256sum > /dev/null; then
@@ -178,13 +183,15 @@ sha2_256_hash_file() {
     RESULT="$(openssl sha256 "${FILE}")"
     RESULT="${RESULT##* }"
   else
-    return 4
+    fail_with_message "sha2_256_hash_file: no sha2-256 tool available"
   fi
 
-  [[ -z "${RESULT}" ]] && return 41
+  [[ -z "${RESULT}" ]] \
+    && fail_with_message "sha2_256_hash_file: hash result is empty"
 
   [[ "${HASH}" == "${RESULT}" ]] && return 0
 
+  fail_with_message "sha2_256_hash_file: hash mismatch: expected: '${HASH}' - got: '${RESULT}'"
   return 66
 }
 
