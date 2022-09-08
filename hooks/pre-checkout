@@ -175,10 +175,10 @@ sha2_256_hash_file() {
 }
 
 # download_trivy downloads the specified version of trivy from GitHub and
-# authenticates it using the hashes file stored with the GitHub # release
+# authenticates it using the hashes file stored with the GitHub release
 # (yes, this is not ideal). Callers can also specify an optional file
-# path to move the executable to. If no file path is specified, the function
-# leaves the executable in a temporary directory.
+# path to move the executable to. If no file path is specified, the
+# function leaves the executable in a temporary directory.
 #
 # The function writes the executable's final file path to stdout.
 download_trivy() {
