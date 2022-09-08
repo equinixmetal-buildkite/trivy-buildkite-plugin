@@ -37,11 +37,10 @@ readonly TRIVY_DEFAULT_VERSION="0.29.2"
 export TRIVY_VERSION="${BUILDKITE_PLUGIN_TRIVY_VERSION:-$TRIVY_DEFAULT_VERSION}"
 REMOVE_FILE_ON_ERR=""
 
-# TODO: Accept exit code as function argument.
-fail_with_message() {
+die() {
   [[ -f "${REMOVE_FILE_ON_ERR}" ]] && rm "${REMOVE_FILE_ON_ERR}"
-  display_error "$1"
-  exit 1
+  display_error "$2"
+  exit $1
 }
 
 display_error() {
@@ -68,7 +67,7 @@ display_success() {
 trivy_os_cpu_string() {
   local UNAME_INFO=""
   if ! UNAME_INFO="$(uname -a)"; then
-    fail_with_message "failed to run uname"
+    die 1 "failed to run uname"
   fi
 
   local RUNTIME_OS=""
@@ -85,7 +84,7 @@ trivy_os_cpu_string() {
       RUNTIME_OS=FreeBSD
       ;;
     *)
-      fail_with_message "failed to determine current computer's operating system"
+      die 2 "failed to determine current computer's operating system"
       return 1
       ;;
   esac
@@ -101,7 +100,7 @@ trivy_os_cpu_string() {
       RUNTIME_CPU=ARM64
       ;;
     *)
-      fail_with_message "failed to determine current computer's cpu"
+      die 3 "failed to determine current computer's cpu"
       return 2
       ;;
   esac
@@ -124,11 +123,11 @@ trivy_os_cpu_string() {
 trivy_tar_url() {
   local VERSION="${1}"
   [[ -z "${VERSION}" ]] \
-    && fail_with_message "trivy_tar_url: version argument is missing or empty"
+    && die 10 "trivy_tar_url: version argument is missing or empty"
 
   local OS_CPU="${2}"
   [[ -z "${OS_CPU}" ]] \
-    && fail_with_message "trivy_tar_url: os-cpu string argument is missing or empty"
+    && die 11 "trivy_tar_url: os-cpu string argument is missing or empty"
 
   local BASE_URL="https://github.com/aquasecurity/trivy/releases/download"
   local URL="${BASE_URL}/v${VERSION}/trivy_${VERSION}_${OS_CPU}.tar.gz"
@@ -148,7 +147,7 @@ trivy_tar_url() {
 trivy_hashes_url() {
   local VERSION="${1}"
   [[ -z "${VERSION}" ]] \
-    && fail_with_message "trivy_hashes_url: version argument is missing or empty"
+    && die 20 "trivy_hashes_url: version argument is missing or empty"
 
   local BASE_URL="https://github.com/aquasecurity/trivy/releases/download"
   local URL="${BASE_URL}/v${VERSION}/trivy_${VERSION}_checksums.txt"
@@ -165,14 +164,14 @@ trivy_hashes_url() {
 sha2_256_hash_file() {
   local FILE="${1}"
   [[ -z "${FILE}" ]] \
-    && fail_with_message "sha2_256_hash_file: file argument is missing or empty"
+    && die 30 "sha2_256_hash_file: file argument is missing or empty"
 
   [[ ! -f "${FILE}" ]] \
-    && fail_with_message "sha2_256_hash_file: target file ('${FILE}') does not exist"
+    && die 31 "sha2_256_hash_file: target file ('${FILE}') does not exist"
 
   local HASH="${2}"
   [[ -z "${HASH}" ]] \
-    && fail_with_message "sha2_256_hash_file: hash argument is missing or empty"
+    && die 32 "sha2_256_hash_file: hash argument is missing or empty"
 
   local RESULT=""
   if which sha256sum > /dev/null; then
@@ -194,15 +193,15 @@ sha2_256_hash_file() {
     RESULT="$(openssl sha256 "${FILE}")"
     RESULT="${RESULT##* }"
   else
-    fail_with_message "sha2_256_hash_file: no sha2-256 tool available"
+    die 33 "sha2_256_hash_file: no sha2-256 tool available"
   fi
 
   [[ -z "${RESULT}" ]] \
-    && fail_with_message "sha2_256_hash_file: hash result is empty"
+    && die 34 "sha2_256_hash_file: hash result is empty"
 
   [[ "${HASH}" == "${RESULT}" ]] && return 0
 
-  fail_with_message "sha2_256_hash_file: hash mismatch: expected: '${HASH}' - got: '${RESULT}'"
+  die 35 "sha2_256_hash_file: hash mismatch: expected: '${HASH}' - got: '${RESULT}'"
   return 66
 }
 
@@ -216,7 +215,7 @@ sha2_256_hash_file() {
 download_trivy() {
   local VERSION="${1}"
   [[ -z "${VERSION}" ]] \
-    && fail_with_message "download_trivy: trivy version not specified"
+    && die 40 "download_trivy: trivy version not specified"
 
   local TRIVY_OS_CPU=""
   TRIVY_OS_CPU="$(trivy_os_cpu_string)"
@@ -230,10 +229,10 @@ download_trivy() {
   local HASHES=""
   HASHES="$(curl --fail -L "${HASHES_URL}")"
   [[ "${?}" -ne 0 ]] \
-    && fail_with_message "download_trivy: failed to download hashes"
+    && die 41 "download_trivy: failed to download hashes"
 
   [[ -z "${HASHES}" ]] \
-    && fail_with_message "download_trivy: downloaded hashes file is empty"
+    && die 42 "download_trivy: downloaded hashes file is empty"
 
   local TAR_NAME="${TAR_URL##*/}"
 
@@ -252,26 +251,26 @@ download_trivy() {
   done
 
   [[ -z "${HASH}" ]] \
-    && fail_with_message "download_trivy: failed to find matching hash for '${TAR_NAME}'"
+    && die 43 "download_trivy: failed to find matching hash for '${TAR_NAME}'"
 
   local TEMP_DIR=""
   TEMP_DIR="$(mktemp -d)"
   [[ "${?}" -ne 0 ]] \
-    && fail_with_message "download_trivy: failed to create temp dir"
+    && die 44 "download_trivy: failed to create temp dir"
 
   local FINAL_TAR="${TEMP_DIR}/temp-trivy.tar.gz"
   REMOVE_FILE_ON_ERR="${FINAL_TAR}"
   curl --fail -L -o "${FINAL_TAR}" "${TAR_URL}" \
-    || fail_with_message "download_trivy: failed to download trivy to '${FINAL_TAR}'"
+    || die 45 "download_trivy: failed to download trivy to '${FINAL_TAR}'"
 
   sha2_256_hash_file "${FINAL_TAR}" "${HASH}"
 
   tar -C "${TEMP_DIR}" -xzvf "${FINAL_TAR}" \
-    || fail_with_message "download_trivy: failed to un-tar '${FINAL_TAR}' (return code: $?)"
+    || die 46 "download_trivy: failed to un-tar '${FINAL_TAR}' (return code: $?)"
 
   local EXE="${TEMP_DIR}/trivy"
   [[ -f "${EXE}" ]] \
-    || fail_with_message "download_trivy: '${TAR_NAME}' does not contain a file named 'trivy'"
+    || die 47 "download_trivy: '${TAR_NAME}' does not contain a file named 'trivy'"
 
   echo "${EXE}"
 
@@ -316,12 +315,12 @@ find_or_download_trivy() {
     local INSTALL_DIR="${HOME}/bin"
 
     mkdir -m 0700 "${INSTALL_DIR}" \
-      || fail_with_message "failed to create install dir at '${INSTALL_DIR}'"
+      || die 50 "failed to create install dir at '${INSTALL_DIR}'"
 
     FINAL_TRIVY_EXE="${INSTALL_DIR}/trivy"
 
     mv "${TRIVY_TMP_EXE}" "${FINAL_TRIVY_EXE}" 1> /dev/null \
-      || fail_with_message "failed to move '${TRIVY_TMP_EXE}' to '${FINAL_TRIVY_EXE}'"
+      || die 51 "failed to move '${TRIVY_TMP_EXE}' to '${FINAL_TRIVY_EXE}'"
   else
     export TRIVY_EXE_IN_TEMP="true"
 
