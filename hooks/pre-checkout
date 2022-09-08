@@ -218,11 +218,14 @@ download_trivy() {
   [[ -z "${VERSION}" ]] \
     && fail_with_message "download_trivy: trivy version not specified"
 
-  local TRIVY_OS_CPU="$(trivy_os_cpu_string)"
+  local TRIVY_OS_CPU=""
+  TRIVY_OS_CPU="$(trivy_os_cpu_string)"
 
-  local HASHES_URL="$(trivy_hashes_url "${VERSION}")"
+  local HASHES_URL=""
+  HASHES_URL="$(trivy_hashes_url "${VERSION}")"
 
-  local TAR_URL=$(trivy_tar_url "${VERSION}" "${TRIVY_OS_CPU}")
+  local TAR_URL=""
+  TAR_URL="$(trivy_tar_url "${VERSION}" "${TRIVY_OS_CPU}")"
 
   local HASHES=""
   HASHES="$(curl --fail -L "${HASHES_URL}")"
