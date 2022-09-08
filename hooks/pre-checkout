@@ -145,7 +145,7 @@ sha2_256_hash_file() {
   [[ -z "${HASH}" ]] && return 3
 
   local RESULT=""
-  if which sha256sum 2>&1 > /dev/null; then
+  if which sha256sum > /dev/null; then
     # $ RESULT="$(sha256sum /proc/self/cmdline)"
     # $ echo "${RESULT}"
     # 31d14183b4... /proc/self/cmdline
@@ -154,7 +154,7 @@ sha2_256_hash_file() {
     # 31d14183b4...
     RESULT="$(sha256sum "${FILE}")"
     RESULT="${RESULT% *}"
-  elif which openssl 2>&1 > /dev/null; then
+  elif which openssl > /dev/null; then
     # $ RESULT="$(openssl sha256 /proc/self/cmdline)"
     # $ echo "${RESULT}"
     # SHA256(/proc/self/cmdline)= fbc0b267807d5d...
