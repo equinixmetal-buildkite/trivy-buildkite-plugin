@@ -228,13 +228,13 @@ download_trivy() {
 
   local TAR_NAME="${TAR_URL##*/}"
 
-  # Order of lines will be:
-  #   <hash-string>
-  #   <filename>
   local HASH=""
   local CURRENT_VALUE=""
   local LAST_VALUE=""
   for CURRENT_VALUE in ${HASHES}; do
+    # Order of lines will be:
+    #   <hash-string>
+    #   <filename>
     if [[ "${CURRENT_VALUE}" == "${TAR_NAME}" ]] ; then
       HASH="${LAST_VALUE}"
       break
