@@ -107,12 +107,17 @@ trivy_os_cpu_string() {
 #
 # For example:
 # https://github.com/aquasecurity/trivy/releases/download/v0.31.3/trivy_0.31.3_FreeBSD-64bit.tar.gz
+#
+# This function exits the script with a non-zero exit status code
+# if an error occurs.
 trivy_tar_url() {
   local VERSION="${1}"
-  [[ -z "${VERSION}" ]] && return 1
+  [[ -z "${VERSION}" ]] \
+    && fail_with_message "trivy_tar_url: version argument is missing or empty"
 
   local OS_CPU="${2}"
-  [[ -z "${OS_CPU}" ]] && return 2
+  [[ -z "${OS_CPU}" ]] \
+    && fail_with_message "trivy_tar_url: os-cpu string argument is missing or empty"
 
   local BASE_URL="https://github.com/aquasecurity/trivy/releases/download"
   local URL="${BASE_URL}/v${VERSION}/trivy_${VERSION}_${OS_CPU}.tar.gz"
@@ -124,13 +129,15 @@ trivy_tar_url() {
 # trivy_hashes_url builds the hashes URL for the specified version
 # of trivy and writes it to stdout.
 #
-# Any non-zero status code indicates an error.
-#
 # For example:
 # https://github.com/aquasecurity/trivy/releases/download/v0.31.3/trivy_0.31.3_checksums.txt
+#
+# This function exits the script with a non-zero exit status code
+# if an error occurs.
 trivy_hashes_url() {
   local VERSION="${1}"
-  [[ -z "${VERSION}" ]] && return 1
+  [[ -z "${VERSION}" ]] \
+    && fail_with_message "trivy_hashes_url: version argument is missing or empty"
 
   local BASE_URL="https://github.com/aquasecurity/trivy/releases/download"
   local URL="${BASE_URL}/v${VERSION}/trivy_${VERSION}_checksums.txt"
