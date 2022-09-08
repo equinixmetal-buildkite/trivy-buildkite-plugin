@@ -228,6 +228,7 @@ download_trivy() {
 
   local HASHES=""
   HASHES="$(curl --fail -L "${HASHES_URL}")"
+  # shellcheck disable=SC2181
   [[ "${?}" -ne 0 ]] \
     && die 41 "download_trivy: failed to download hashes"
 
@@ -255,6 +256,7 @@ download_trivy() {
 
   local TEMP_DIR=""
   TEMP_DIR="$(mktemp -d)"
+  # shellcheck disable=SC2181
   [[ "${?}" -ne 0 ]] \
     && die 44 "download_trivy: failed to create temp dir"
 
@@ -283,6 +285,7 @@ download_trivy() {
 find_or_download_trivy() {
   local WHICH_TRIVY_EXE=""
   WHICH_TRIVY_EXE="$(which trivy)"
+  # shellcheck disable=SC2181
   if [[ "$?" -eq 0 ]] && [[ -f "${WHICH_TRIVY_EXE}" ]] ; then
     echo "${WHICH_TRIVY_EXE}"
     return 0
