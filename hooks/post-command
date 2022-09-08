@@ -90,6 +90,10 @@ echo "scanning filesystem"
 docker run -v "${PWD}":/workdir --rm "$image" fs "${args[@]}" "${fsargs[@]}" /workdir
 status=$?
 
+# Status gets overwritten by the next scan, so we save it here
+# This way, we actually exit with a failure.
+final_status=$status
+
 if [[ $status -ne 0 ]]; then
   display_error "trivy found vulnerabilities in repository. See the job output for details."
 else
@@ -139,3 +143,5 @@ if [[ $status -ne 0 ]]; then
 else
   display_success "trivy didn't find any relevant vulnerabilities in the container image"
 fi
+
+exit $final_status
