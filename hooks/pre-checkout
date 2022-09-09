@@ -4,7 +4,7 @@
 # If it cannot locate the executable, it downloads it from GitHub,
 # authenticates it, and then copies it to one of the following directories:
 #
-# - The current working directory (default)
+# - A temporary directory
 # - ${HOME}/bin/ (if the "install-in-home-bin" option is set to "true",
 #   "TRUE", "yes", or "YES")
 #
@@ -14,7 +14,7 @@
 # available to subsequent buildkite hooks:
 #
 # - TRIVY_VERSION     - The selected trivy version
-# - TRIVY_EXE_PATH    - Set to the selected trivy executable's file path
+# - TRIVY_EXE_PATH    - The trivy executable's file path
 # - TRIVY_EXE_IN_TEMP - Set to "true" if the trivy executable is stored
 #                       in a temporary directory
 #
