@@ -3,9 +3,9 @@
 load '/usr/local/lib/bats/load.bash'
 
 # NOTE(jaosorior): This is duplicated in the hook.
-export default_version="0.29.2"
-export version="${BUILDKITE_PLUGIN_TRIVY_VERSION:-$default_version}"
-export image="aquasec/trivy:${version}"
+readonly TRIVY_DEFAULT_VERSION="0.29.2"
+export TRIVY_VERSION="${BUILDKITE_PLUGIN_TRIVY_VERSION:-$TRIVY_DEFAULT_VERSION}"
+export image="aquasec/trivy:${TRIVY_VERSION}"
 
 # Uncomment the following line to debug stub failures
 # export BUILDKITE_AGENT_STUB_DEBUG=/dev/tty
