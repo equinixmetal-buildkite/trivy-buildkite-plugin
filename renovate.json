@@ -5,8 +5,8 @@
     ],
     "regexManagers": [
       {
-        "fileMatch": ["^(hooks/*|tests/*.bats)$"],
-        "matchStrings": ["readonly TRIVY_DEFAULT_VERSION=(?<currentValue>.*?)\\s"],
+        "fileMatch": ["^(hooks\/.+|tests\/+.bats)$"],
+        "matchStrings": ["readonly TRIVY_DEFAULT_VERSION=\"(?<currentValue>.*?)\"\\s"],
         "depNameTemplate": "aquasec/trivy",
         "datasourceTemplate": "docker"
       }
