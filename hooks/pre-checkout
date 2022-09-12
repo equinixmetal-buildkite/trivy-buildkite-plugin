@@ -108,8 +108,6 @@ trivy_os_cpu_string() {
 # trivy_tar_url builds the tar.gz URL for the specified version
 # of trivy and writes it to stdout.
 #
-# Any non-zero status code indicates an error.
-#
 # For example:
 # https://github.com/aquasecurity/trivy/releases/download/v0.31.3/trivy_0.31.3_FreeBSD-64bit.tar.gz
 trivy_tar_url() {
@@ -145,11 +143,9 @@ trivy_hashes_url() {
   return 0
 }
 
-# sha2_256_hash_file hashes the specified file using the provided
-# SHA2-256 hash string, returning status code zero on success.
-#
-# This function exits the script with a non-zero exit status code
-# if an error occurs.
+# sha2_256_hash_file hashes the specified file and compares the resulting
+# hash with the provided SHA2-256 hash string, returning status code zero
+# on success.
 sha2_256_hash_file() {
   local FILE="${1}"
   [[ -z "${FILE}" ]] \
@@ -197,9 +193,6 @@ sha2_256_hash_file() {
 # authenticates it using the hashes file stored with the GitHub release
 # (yes, this is not ideal). The function saves the executable in a temporary
 # directory. The trivy executable's file path is written to stdout.
-#
-# This function exits the script with a non-zero exit status code
-# if an error occurs.
 download_trivy() {
   local VERSION="${1}"
   [[ -z "${VERSION}" ]] \
@@ -251,7 +244,7 @@ download_trivy() {
   sha2_256_hash_file "${FINAL_TAR}" "${HASH}" || return "${?}"
 
   tar -C "${TEMP_DIR}" -xzvf "${FINAL_TAR}" \
-    || die 46 "download_trivy: failed to un-tar '${FINAL_TAR}' (return code: $?)"
+    || die 46 "download_trivy: failed to un-tar '${FINAL_TAR}'"
 
   local EXE="${TEMP_DIR}/trivy"
   [[ -f "${EXE}" ]] \
