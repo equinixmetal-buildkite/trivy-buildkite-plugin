@@ -1,5 +1,14 @@
 {
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
     "extends": [
       "config:base"
+    ],
+    "regexManagers": [
+      {
+        "fileMatch": ["^(hooks/*|tests/*.bats)$"],
+        "matchStrings": ["readonly TRIVY_DEFAULT_VERSION=(?<currentValue>.*?)\\s"],
+        "depNameTemplate": "aquasec/trivy",
+        "datasourceTemplate": "docker"
+      }
     ]
   }
