@@ -44,6 +44,10 @@ steps:
 
 ## Configuration
 
+### `install-in-home-bin` (Optional, boolean)
+
+Controls whether the plugin will copy the downloaded trivy executable to `${HOME}/bin`. Ordinarily, the plugin searches `PATH` for an existing trivy executable or downloads and executes trivy from a temporary directory if not found in `PATH`. (Defaults to `false` - only applicable if trivy is not found in `PATH`)
+
 ### `exit-code` (Optional, array)
 
 Controls whether the security scan is blocking or not. This is done by setting the exit code of the plugin. If the exit code is set to 0, the pipeline will continue. If the exit code is set to 1, the pipeline will fail. (Defaults to 0)
