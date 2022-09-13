@@ -4,6 +4,10 @@ author: Hari
 requirements:
   - bash
   - docker
+  - uname
+  - curl
+  - mktemp
+  - tar
 configuration:
   properties:
     exit-code:

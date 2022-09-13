@@ -1,0 +1,305 @@
+#!/bin/bash
+
+# This portion of the plugin looks for the "trivy" executable in PATH.
+# If it cannot locate the executable, it downloads it from GitHub,
+# authenticates it, and then copies it to one of the following directories:
+#
+# - A temporary directory
+# - ${HOME}/bin/ (if the "install-in-home-bin" option is set to "true",
+#   "TRUE", "yes", or "YES")
+#
+# The script then writes the executable's file path to stdout.
+#
+# The following environment variables are set and (theoretically)
+# available to subsequent buildkite hooks:
+#
+# - TRIVY_VERSION     - The selected trivy version
+# - TRIVY_EXE_PATH    - The trivy executable's file path
+# - TRIVY_EXE_IN_TEMP - Set to "true" if the trivy executable is stored
+#                       in a temporary directory
+#
+# Required executables / bash built-ins:
+#
+# - exit
+# - echo
+# - export
+# - if / [[ ]]
+# - buildkite-agent
+# - uname
+# - curl
+# - sha256sum || openssl
+# - mktemp
+# - tar
+# - which
+# - mkdir
+
+readonly TRIVY_DEFAULT_VERSION="0.29.2"
+export TRIVY_VERSION="${BUILDKITE_PLUGIN_TRIVY_VERSION:-$TRIVY_DEFAULT_VERSION}"
+REMOVE_FILE_ON_ERR=""
+
+die() {
+  [[ -f "${REMOVE_FILE_ON_ERR}" ]] && rm "${REMOVE_FILE_ON_ERR}"
+  display_error "$2"
+  exit "$1"
+}
+
+display_error() {
+  message="$1"
+  echo "🚨 $message" >&2
+  buildkite-agent annotate --style error "$message<br />" --context publish --append
+}
+
+display_success() {
+  message="$1"
+  echo "$message"
+  buildkite-agent annotate --style success "$message<br />" --context publish --append
+}
+
+# trivy_os_cpu_string retrieves information from the runtime
+# environment and uses it to build the OS and CPU string that
+# appears in each trivy release's file name.
+#
+# For example, the string for "trivy_0.31.3_FreeBSD-32bit.tar.gz" 
+# would be "FreeBSD-32bit".
+trivy_os_cpu_string() {
+  local UNAME_INFO=""
+  if ! UNAME_INFO="$(uname -a)"; then
+    die 1 "failed to run uname"
+  fi
+
+  local RUNTIME_OS=""
+  local RUNTIME_CPU=""
+
+  case "${UNAME_INFO}" in
+    *Darwin*)
+      RUNTIME_OS=macOS
+      ;;
+    *Linux*)
+      RUNTIME_OS=Linux
+      ;;
+    *FreeBSD*)
+      RUNTIME_OS=FreeBSD
+      ;;
+    *)
+      die 2 "failed to determine current computer's operating system"
+      ;;
+  esac
+
+  case "${UNAME_INFO}" in
+    *amd64*)
+      RUNTIME_CPU=64bit
+      ;;
+    *x86_64*)
+      RUNTIME_CPU=64bit
+      ;;
+    *arm64*)
+      RUNTIME_CPU=ARM64
+      ;;
+    *)
+      die 3 "failed to determine current computer's cpu"
+      ;;
+  esac
+
+  echo "${RUNTIME_OS}-${RUNTIME_CPU}"
+
+  return 0
+}
+
+# trivy_tar_url builds the tar.gz URL for the specified version
+# of trivy and writes it to stdout.
+#
+# For example:
+# https://github.com/aquasecurity/trivy/releases/download/v0.31.3/trivy_0.31.3_FreeBSD-64bit.tar.gz
+trivy_tar_url() {
+  local VERSION="${1}"
+  [[ -z "${VERSION}" ]] \
+    && die 10 "trivy_tar_url: version argument is missing or empty"
+
+  local OS_CPU="${2}"
+  [[ -z "${OS_CPU}" ]] \
+    && die 11 "trivy_tar_url: os-cpu string argument is missing or empty"
+
+  local BASE_URL="https://github.com/aquasecurity/trivy/releases/download"
+  local URL="${BASE_URL}/v${VERSION}/trivy_${VERSION}_${OS_CPU}.tar.gz"
+
+  echo "${URL}"
+  return 0
+}
+
+# trivy_hashes_url builds the hashes URL for the specified version
+# of trivy and writes it to stdout.
+#
+# For example:
+# https://github.com/aquasecurity/trivy/releases/download/v0.31.3/trivy_0.31.3_checksums.txt
+trivy_hashes_url() {
+  local VERSION="${1}"
+  [[ -z "${VERSION}" ]] \
+    && die 20 "trivy_hashes_url: version argument is missing or empty"
+
+  local BASE_URL="https://github.com/aquasecurity/trivy/releases/download"
+  local URL="${BASE_URL}/v${VERSION}/trivy_${VERSION}_checksums.txt"
+
+  echo "${URL}"
+  return 0
+}
+
+# sha2_256_hash_file hashes the specified file and compares the resulting
+# hash with the provided SHA2-256 hash string, returning status code zero
+# on success.
+sha2_256_hash_file() {
+  local FILE="${1}"
+  [[ -z "${FILE}" ]] \
+    && die 30 "sha2_256_hash_file: file argument is missing or empty"
+
+  [[ ! -f "${FILE}" ]] \
+    && die 31 "sha2_256_hash_file: target file ('${FILE}') does not exist"
+
+  local HASH="${2}"
+  [[ -z "${HASH}" ]] \
+    && die 32 "sha2_256_hash_file: hash argument is missing or empty"
+
+  local RESULT=""
+  if which sha256sum > /dev/null; then
+    # $ RESULT="$(sha256sum /proc/self/cmdline)"
+    # $ echo "${RESULT}"
+    # 31d14183b4... /proc/self/cmdline
+    # $ RESULT="${RESULT% *}"
+    # $ echo "${RESULT}"
+    # 31d14183b4...
+    RESULT="$(sha256sum "${FILE}")"
+    RESULT="${RESULT% *}"
+  elif which openssl > /dev/null; then
+    # $ RESULT="$(openssl sha256 /proc/self/cmdline)"
+    # $ echo "${RESULT}"
+    # SHA256(/proc/self/cmdline)= fbc0b267807d5d...
+    # $ RESULT="${RESULT##* }"
+    # $ echo "${RESULT}"
+    # fbc0b267807d5d...
+    RESULT="$(openssl sha256 "${FILE}")"
+    RESULT="${RESULT##* }"
+  else
+    die 33 "sha2_256_hash_file: no sha2-256 tool available"
+  fi
+
+  [[ -z "${RESULT}" ]] \
+    && die 34 "sha2_256_hash_file: hash result is empty"
+
+  [[ "${HASH}" == "${RESULT}" ]] && return 0
+
+  die 35 "sha2_256_hash_file: hash mismatch: expected: '${HASH}' - got: '${RESULT}'"
+}
+
+# download_trivy downloads the specified version of trivy from GitHub and
+# authenticates it using the hashes file stored with the GitHub release
+# (yes, this is not ideal). The function saves the executable in a temporary
+# directory. The trivy executable's file path is written to stdout.
+download_trivy() {
+  local VERSION="${1}"
+  [[ -z "${VERSION}" ]] \
+    && die 40 "download_trivy: trivy version not specified"
+
+  local TRIVY_OS_CPU=""
+  TRIVY_OS_CPU="$(trivy_os_cpu_string)" || return "${?}"
+
+  local HASHES_URL=""
+  HASHES_URL="$(trivy_hashes_url "${VERSION}")" || return "${?}"
+
+  local TAR_URL=""
+  TAR_URL="$(trivy_tar_url "${VERSION}" "${TRIVY_OS_CPU}")" || return "${?}"
+
+  local HASHES=""
+  HASHES="$(curl --fail -L "${HASHES_URL}")" \
+    || die 41 "download_trivy: failed to download hashes"
+
+  [[ -z "${HASHES}" ]] \
+    && die 42 "download_trivy: downloaded hashes file is empty"
+
+  local TAR_NAME="${TAR_URL##*/}"
+
+  local HASH=""
+  local CURRENT_VALUE=""
+  local LAST_VALUE=""
+  for CURRENT_VALUE in ${HASHES}; do
+    # Order of lines will be:
+    #   <hash-string>
+    #   <filename>
+    if [[ "${CURRENT_VALUE}" == "${TAR_NAME}" ]] ; then
+      HASH="${LAST_VALUE}"
+      break
+    fi
+    LAST_VALUE="${CURRENT_VALUE}"
+  done
+
+  [[ -z "${HASH}" ]] \
+    && die 43 "download_trivy: failed to find matching hash for '${TAR_NAME}'"
+
+  local TEMP_DIR=""
+  TEMP_DIR="$(mktemp -d)" || die 44 "download_trivy: failed to create temp dir"
+
+  local FINAL_TAR="${TEMP_DIR}/temp-trivy.tar.gz"
+  REMOVE_FILE_ON_ERR="${FINAL_TAR}"
+  curl --fail -L -o "${FINAL_TAR}" "${TAR_URL}" \
+    || die 45 "download_trivy: failed to download trivy to '${FINAL_TAR}'"
+
+  sha2_256_hash_file "${FINAL_TAR}" "${HASH}" || return "${?}"
+
+  tar -C "${TEMP_DIR}" -xzvf "${FINAL_TAR}" \
+    || die 46 "download_trivy: failed to un-tar '${FINAL_TAR}'"
+
+  local EXE="${TEMP_DIR}/trivy"
+  [[ -f "${EXE}" ]] \
+    || die 47 "download_trivy: '${TAR_NAME}' does not contain a file named 'trivy'"
+
+  echo "${EXE}"
+
+  return 0
+}
+
+WHICH_TRIVY_EXE=""
+WHICH_TRIVY_EXE="$(which trivy)"
+# shellcheck disable=SC2181
+if [[ "$?" -eq 0 ]] && [[ -f "${WHICH_TRIVY_EXE}" ]]; then
+  echo "${WHICH_TRIVY_EXE}"
+  exit 0
+fi
+
+TRIVY_TMP_EXE=""
+TRIVY_TMP_EXE="$(download_trivy "${TRIVY_VERSION}")" || exit $?
+
+# TODO: idk.
+HOME_INSTALL=""
+case "${BUILDKITE_PLUGIN_TRIVY_INSTALL_IN_HOME_BIN}" in
+  "yes")
+    HOME_INSTALL=true
+    ;;
+  "YES")
+    HOME_INSTALL=true
+    ;;
+  "true")
+    HOME_INSTALL=true
+    ;;
+  "TRUE")
+    HOME_INSTALL=true
+    ;;
+esac
+
+FINAL_TRIVY_EXE=""
+if [[ -n "${HOME_INSTALL}" ]] ; then
+  INSTALL_DIR="${HOME}/bin"
+
+  mkdir -m 0700 "${INSTALL_DIR}" \
+    || die 50 "failed to create install dir at '${INSTALL_DIR}'"
+
+  FINAL_TRIVY_EXE="${INSTALL_DIR}/trivy"
+
+  mv "${TRIVY_TMP_EXE}" "${FINAL_TRIVY_EXE}" \
+    || die 51 "failed to move '${TRIVY_TMP_EXE}' to '${FINAL_TRIVY_EXE}'"
+else
+  export TRIVY_EXE_IN_TEMP="true"
+
+  FINAL_TRIVY_EXE="${TRIVY_TMP_EXE}"
+fi
+
+echo "${FINAL_TRIVY_EXE}"
+
+export TRIVY_EXE_PATH="${FINAL_TRIVY_EXE}"
