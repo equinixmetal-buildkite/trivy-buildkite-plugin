@@ -1,13 +1,5 @@
 #!/bin/bash
 
-# NOTE(jaosorior): This is duplicated in the tests.
-readonly TRIVY_DEFAULT_VERSION="0.31.3"
-export TRIVY_VERSION="${BUILDKITE_PLUGIN_TRIVY_VERSION:-$TRIVY_DEFAULT_VERSION}"
-export image="aquasec/trivy:${TRIVY_VERSION}"
-
-args=()
-fsargs=()
-
 # Helper functions
 ##################
 
@@ -59,6 +51,21 @@ docker_metadata_file_exists() {
 # Hook
 ######
 
+[[ -z "${TRIVY_EXE_PATH}" ]] \
+  && fail_with_message "TRIVY_EXE_PATH env. is unset or empty"
+
+[[ ! -f "${TRIVY_EXE_PATH}" ]] \
+  && fail_with_message "trivy exe file does not exist ('${TRIVY_EXE_PATH}')"
+
+# I would prefer to just execute the path pointed-to by this environment
+# variable - but that is incompatible with the testing framework. As a
+# result, we need to modify PATH to include the directory containing
+# the trivy executable.
+export PATH="${PATH}:${TRIVY_EXE_PATH%/*}"
+
+args=()
+fsargs=()
+
 if [[ "${BUILDKITE_PLUGIN_TRIVY_EXIT_CODE:-0}" -eq 1 ]] ; then
   args+=("--exit-code" "1")
   echo "using exit-code=1 option while scanning"
@@ -87,7 +94,7 @@ else
 fi
 
 echo "scanning filesystem"
-docker run -v "${PWD}":/workdir --rm "$image" fs "${args[@]}" "${fsargs[@]}" /workdir
+trivy fs "${args[@]}" "${fsargs[@]}" .
 status=$?
 
 # Status gets overwritten by the next scan, so we save it here
@@ -135,7 +142,7 @@ else
 fi
 
 echo "scanning container image"
-docker run -v /var/run/docker.sock:/var/run/docker.sock --rm "${image}" image "${args[@]}" "$targetimageref"
+trivy image "${args[@]}" "$targetimageref"
 status=$?
 
 if [[ $status -ne 0 ]]; then
