@@ -6,30 +6,24 @@ on:
   pull_request:
 
 jobs:
-  plugin-tests:
-    name: Tests
+  test:
     runs-on: ubuntu-latest
-    container:
-      image: buildkite/plugin-tester:latest
-      volumes:
-        - "${{github.workspace}}:/plugin"
     steps:
-      - uses: actions/checkout@v3
-      - name: tests
-        run: bats tests/
-        working-directory: /plugin
+    - uses: actions/checkout@v3
+    - run:
+        make test
 
-  plugin-lint:
-    name: Lint
+  lint:
     runs-on: ubuntu-latest
-    container:
-      image: buildkite/plugin-linter:latest
-      volumes:
-        - "${{github.workspace}}:/plugin"
     steps:
-      - uses: actions/checkout@v3
-      - name: lint
-        run: lint --id trivy
+    - uses: actions/checkout@v3
+      with:
+        # This fetches all branches and tags, which helps us lint that we're using the current version
+        # in our examples.
+        fetch-depth: 0
+    - run:
+        make lint
+
   shellcheck:
     name: Shellcheck
     runs-on: ubuntu-latest

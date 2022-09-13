@@ -19,7 +19,7 @@ Add the following to your `pipeline.yml`:
 steps:
   - command: ls
     plugins:
-      - trivy#v1.13.0: ~
+      - equinixmetal-buildkite/trivy#v1.14.2: ~
 ```
 Define `--exit-code` option as a plugin parameter in  `pipeline.yml` to fail the pipeline when there are vulnerabilities:
 
@@ -27,7 +27,7 @@ Define `--exit-code` option as a plugin parameter in  `pipeline.yml` to fail the
 steps:
   - command: ls
     plugins:
-      - trivy#v1.13.0:
+      - equinixmetal-buildkite/trivy#v1.14.2:
         exit-code: 1
 ```
 
@@ -38,9 +38,37 @@ Below is an example for scanning `CRITICAL` vulnerabilities.
 steps:
   - command: ls
     plugins:
-      - trivy#v1.13.0:
+      - equinixmetal-buildkite/trivy#v1.14.2:
         severity: "CRITICAL"
 ```
+
+## Configuration
+
+### `exit-code` (Optional, array)
+
+Controls whether the security scan is blocking or not. This is done by setting the exit code of the plugin. If the exit code is set to 0, the pipeline will continue. If the exit code is set to 1, the pipeline will fail. (Defaults to 0)
+
+### `severity` (Optional, string)
+
+Controls the severity of the vulnerabilities to be scanned. (Defaults to "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL")
+
+### `ignore-unfixed` (Optional, boolean)
+
+Controls whether to display only fixed vulnerabilities. (Defaults to false)
+
+### `security-checks` (Optional, string)
+
+Controls the security checks to be performed. (Defaults to "vuln,config")
+
+### `image-ref` (Optional, string)
+
+Controls the image reference to be scanned. If no image is specified the image scanning step is skipped. This is also able to infer the image from the [`docker-metadata` plugin](https://github.com/equinixmetal-buildkite/docker-metadata-buidkite-plugin), but one needs to ensure that the images are built
+before calling the `trivy` plugin. (Defaults to "")
+
+### `trivy-version` (Optional, string)
+
+Controls the version of trivy to be used.
+
 ## Developing
 
 Provide examples on how to modify and test, e.g.:
@@ -48,5 +76,5 @@ Provide examples on how to modify and test, e.g.:
 To run the tests:
 
 ```shell
-docker-compose run --rm tests
+make test
 ```
