@@ -239,7 +239,9 @@ download_trivy() {
 
   sha2_256_hash_file "${FINAL_TAR}" "${HASH}" || return "${?}"
 
-  tar -C "${TEMP_DIR}" -xzvf "${FINAL_TAR}" \
+  # "tar -v ..." sends output to stdout on some
+  # platforms instead of stderr because gfy.
+  tar -C "${TEMP_DIR}" -xzvf "${FINAL_TAR}" 1>&2 \
     || die 46 "download_trivy: failed to un-tar '${FINAL_TAR}'"
 
   local EXE="${TEMP_DIR}/trivy"
