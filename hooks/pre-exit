@@ -1,0 +1,5 @@
+#!/bin/bash
+
+[[ "${TRIVY_EXE_IN_TEMP}" != "true" ]] && exit 0
+
+[[ -f "${TRIVY_EXE_PATH}" ]] && rm "${TRIVY_EXE_PATH}"

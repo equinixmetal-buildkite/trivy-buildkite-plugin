@@ -1,12 +1,8 @@
 #!/bin/bash
 
 # This portion of the plugin looks for the "trivy" executable in PATH.
-# If it cannot locate the executable, it downloads it from GitHub,
-# authenticates it, and then copies it to one of the following directories:
-#
-# - A temporary directory
-# - ${HOME}/bin/ (if the "install-in-home-bin" option is set to "true",
-#   "TRUE", "yes", or "YES")
+# If it cannot locate the executable, it downloads it from GitHub, and
+# authenticates it.
 #
 # The script then writes the executable's file path to stdout.
 #
@@ -161,20 +157,20 @@ sha2_256_hash_file() {
   local RESULT=""
   if which sha256sum > /dev/null; then
     # $ RESULT="$(sha256sum /proc/self/cmdline)"
-    # $ echo "${RESULT}"
-    # 31d14183b4... /proc/self/cmdline
-    # $ RESULT="${RESULT% *}"
-    # $ echo "${RESULT}"
-    # 31d14183b4...
+    # $ echo "'${RESULT}'"
+    # '31d14183b4...  /proc/self/cmdline'
+    # $ RESULT="${RESULT%% *}"
+    # $ echo "'${RESULT}'"
+    # '31d14183b4...'
     RESULT="$(sha256sum "${FILE}")"
-    RESULT="${RESULT% *}"
+    RESULT="${RESULT%% *}"
   elif which openssl > /dev/null; then
     # $ RESULT="$(openssl sha256 /proc/self/cmdline)"
-    # $ echo "${RESULT}"
-    # SHA256(/proc/self/cmdline)= fbc0b267807d5d...
+    # $ echo "'${RESULT}'"
+    # 'SHA256(/proc/self/cmdline)= fbc0b267807d5d...'
     # $ RESULT="${RESULT##* }"
-    # $ echo "${RESULT}"
-    # fbc0b267807d5d...
+    # $ echo "'${RESULT}'"
+    # 'fbc0b267807d5d...'
     RESULT="$(openssl sha256 "${FILE}")"
     RESULT="${RESULT##* }"
   else
@@ -243,7 +239,9 @@ download_trivy() {
 
   sha2_256_hash_file "${FINAL_TAR}" "${HASH}" || return "${?}"
 
-  tar -C "${TEMP_DIR}" -xzvf "${FINAL_TAR}" \
+  # "tar -v ..." sends output to stdout on some
+  # platforms instead of stderr because gfy.
+  tar -C "${TEMP_DIR}" -xzvf "${FINAL_TAR}" 1>&2 \
     || die 46 "download_trivy: failed to un-tar '${FINAL_TAR}'"
 
   local EXE="${TEMP_DIR}/trivy"
@@ -263,42 +261,10 @@ if [[ "$?" -eq 0 ]] && [[ -f "${WHICH_TRIVY_EXE}" ]]; then
   exit 0
 fi
 
-TRIVY_TMP_EXE=""
-TRIVY_TMP_EXE="$(download_trivy "${TRIVY_VERSION}")" || exit $?
-
-# TODO: idk.
-HOME_INSTALL=""
-case "${BUILDKITE_PLUGIN_TRIVY_INSTALL_IN_HOME_BIN}" in
-  "yes")
-    HOME_INSTALL=true
-    ;;
-  "YES")
-    HOME_INSTALL=true
-    ;;
-  "true")
-    HOME_INSTALL=true
-    ;;
-  "TRUE")
-    HOME_INSTALL=true
-    ;;
-esac
-
 FINAL_TRIVY_EXE=""
-if [[ -n "${HOME_INSTALL}" ]] ; then
-  INSTALL_DIR="${HOME}/bin"
+FINAL_TRIVY_EXE="$(download_trivy "${TRIVY_VERSION}")" || exit $?
 
-  mkdir -m 0700 "${INSTALL_DIR}" \
-    || die 50 "failed to create install dir at '${INSTALL_DIR}'"
-
-  FINAL_TRIVY_EXE="${INSTALL_DIR}/trivy"
-
-  mv "${TRIVY_TMP_EXE}" "${FINAL_TRIVY_EXE}" \
-    || die 51 "failed to move '${TRIVY_TMP_EXE}' to '${FINAL_TRIVY_EXE}'"
-else
-  export TRIVY_EXE_IN_TEMP="true"
-
-  FINAL_TRIVY_EXE="${TRIVY_TMP_EXE}"
-fi
+export TRIVY_EXE_IN_TEMP="true"
 
 echo "${FINAL_TRIVY_EXE}"
 
