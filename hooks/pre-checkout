@@ -157,20 +157,20 @@ sha2_256_hash_file() {
   local RESULT=""
   if which sha256sum > /dev/null; then
     # $ RESULT="$(sha256sum /proc/self/cmdline)"
-    # $ echo "${RESULT}"
-    # 31d14183b4... /proc/self/cmdline
-    # $ RESULT="${RESULT% *}"
-    # $ echo "${RESULT}"
-    # 31d14183b4...
+    # $ echo "'${RESULT}'"
+    # '31d14183b4...  /proc/self/cmdline'
+    # $ RESULT="${RESULT%% *}"
+    # $ echo "'${RESULT}'"
+    # '31d14183b4...'
     RESULT="$(sha256sum "${FILE}")"
-    RESULT="${RESULT% *}"
+    RESULT="${RESULT%% *}"
   elif which openssl > /dev/null; then
     # $ RESULT="$(openssl sha256 /proc/self/cmdline)"
-    # $ echo "${RESULT}"
-    # SHA256(/proc/self/cmdline)= fbc0b267807d5d...
+    # $ echo "'${RESULT}'"
+    # 'SHA256(/proc/self/cmdline)= fbc0b267807d5d...'
     # $ RESULT="${RESULT##* }"
-    # $ echo "${RESULT}"
-    # fbc0b267807d5d...
+    # $ echo "'${RESULT}'"
+    # 'fbc0b267807d5d...'
     RESULT="$(openssl sha256 "${FILE}")"
     RESULT="${RESULT##* }"
   else

@@ -163,7 +163,7 @@ teardown() {
   stub curl \
     "--fail -L https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_checksums.txt : echo 'AAAA  trivy_${TESTV}_FreeBSD-64bit.tar.gz'" \
     "--fail -L -o ${tar_file} https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_FreeBSD-64bit.tar.gz : echo foobar > ${tar_file}"
-  stub sha256sum "* : echo nope"
+  stub sha256sum "* : echo 'hailsatan  ${tar_file}'"
 
   run "$PWD/hooks/pre-checkout"
 
@@ -184,7 +184,7 @@ teardown() {
   stub curl \
     "--fail -L https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_checksums.txt : echo 'AAAA  trivy_${TESTV}_FreeBSD-64bit.tar.gz'" \
     "--fail -L -o ${tar_file} https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_FreeBSD-64bit.tar.gz : echo foobar > ${tar_file}"
-  stub sha256sum "* : echo AAAA"
+  stub sha256sum "* : echo 'AAAA  ${tar_file}'"
   stub tar "* : exit 123"
 
   run "$PWD/hooks/pre-checkout"
@@ -207,7 +207,7 @@ teardown() {
   stub curl \
     "--fail -L https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_checksums.txt : echo 'AAAA  trivy_${TESTV}_FreeBSD-64bit.tar.gz'" \
     "--fail -L -o ${tar_file} https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_FreeBSD-64bit.tar.gz : echo foobar > ${tar_file}"
-  stub sha256sum "* : echo AAAA"
+  stub sha256sum "* : echo 'AAAA  ${tar_file}'"
   stub tar "* : exit 0"
 
   run "$PWD/hooks/pre-checkout"
@@ -249,7 +249,7 @@ teardown() {
   stub curl \
     "--fail -L https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_checksums.txt : echo 'AAAA  trivy_${TESTV}_FreeBSD-64bit.tar.gz'" \
     "--fail -L -o ${tar_file} https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_FreeBSD-64bit.tar.gz : echo foobar > ${tar_file}"
-  stub sha256sum "* : echo AAAA"
+  stub sha256sum "* : echo 'AAAA  ${tar_file}'"
   stub tar "* : touch ${trivy_exe}"
 
   run "$PWD/hooks/pre-checkout"
