@@ -4,7 +4,7 @@ lint: | plugin-arg-docs
 
 .PHONY: test
 test:
-	docker run --rm -v "$$PWD:/plugin:ro" buildkite/plugin-tester
+	docker run --rm -v "$$PWD:/plugin:ro" buildkite/plugin-tester:v2.0.0
 
 .PHONY: plugin-arg-docs
 plugin-arg-docs: ## Ensures that the plugin arguments are documented

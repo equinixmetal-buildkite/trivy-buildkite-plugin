@@ -1,44 +1,52 @@
-<dev align="centre">
-<img src="buildkiteplugin.png" width="600">
-</div>
+# trivy buildkite plugin
 
+The trivy buildkite plugin provides a convenient mechanism for running the
+open-source trivy static analysis tool on your project. For more information
+about trivy, please refer to their
+[documentation](https://aquasecurity.github.io/trivy/latest/docs/).
 
-# Buildkite Plugin Template
+## Features
 
-Check the [buildkite organization](https://github.com/buildkite-plugins) or [website](https://buildkite.com/plugins) to see if your plugin already exists or we can contribute to it !
+- Automatically downloads and verifies the trivy executable if it cannot be
+  found in the `PATH` environment variable's directories
+- Executes a `filesystem` scan on the git repo cloned by buildkite. Refer to the
+  [filesystem scan documentation](https://aquasecurity.github.io/trivy/latest/docs/vulnerability/scanning/filesystem/)
+  for more information
+- Executes an `image` scan against an existing Docker image ref. Refer to the
+  [image scan documentation](https://aquasecurity.github.io/trivy/latest/docs/vulnerability/scanning/image/)
+  for more information
 
-Be sure to update this readme with your plugin information after using the template repository.
+## Basic example
 
-## Example
-
-Provide an example of using this plugin, like so:
-
-Add the following to your `pipeline.yml`:
+The following code snippet demonstrates how to use the plugin in a pipeline
+step with the default plugin configuration parameters:
 
 ```yml
 steps:
   - command: ls
     plugins:
-      - equinixmetal-buildkite/trivy#v1.14.2: ~
+      - equinixmetal-buildkite/trivy#v1.15.0: ~
 ```
-Define `--exit-code` option as a plugin parameter in  `pipeline.yml` to fail the pipeline when there are vulnerabilities:
+
+## Additional examples
+
+Specify the `--exit-code` option as a plugin parameter in `pipeline.yml` to fail the pipeline when there are vulnerabilities:
 
 ```yml
 steps:
   - command: ls
     plugins:
-      - equinixmetal-buildkite/trivy#v1.14.2:
+      - equinixmetal-buildkite/trivy#v1.15.0:
         exit-code: 1
 ```
 
-Define `--severity` option as a plugin parameter in  `pipeline.yml` to scan specific type of vulnerabilities:	
-Below is an example for scanning `CRITICAL` vulnerabilities.
+Specify the `--severity` option as a plugin parameter in `pipeline.yml` to scan specific type of vulnerabilities. Below is an example for scanning `CRITICAL` vulnerabilities:
 
 ```yml
 steps:
   - command: ls
     plugins:
-      - equinixmetal-buildkite/trivy#v1.14.2:
+      - equinixmetal-buildkite/trivy#v1.15.0:
         severity: "CRITICAL"
 ```
 
@@ -62,16 +70,15 @@ Controls the security checks to be performed. (Defaults to "vuln,config")
 
 ### `image-ref` (Optional, string)
 
-Controls the image reference to be scanned. If no image is specified the image scanning step is skipped. This is also able to infer the image from the [`docker-metadata` plugin](https://github.com/equinixmetal-buildkite/docker-metadata-buidkite-plugin), but one needs to ensure that the images are built
-before calling the `trivy` plugin. (Defaults to "")
+**Important**: Please ensure the target Docker image is built prior to the trivy plugin running when using this option. The trivy plugin does not build Docker images; it only scans existing images.
+
+Controls the image reference to be scanned. If no image is specified, the image scanning step is skipped. This is also able to infer the image from the [`docker-metadata` plugin](https://github.com/equinixmetal-buildkite/docker-metadata-buidkite-plugin). (Defaults to "")
 
 ### `trivy-version` (Optional, string)
 
 Controls the version of trivy to be used.
 
 ## Developing
-
-Provide examples on how to modify and test, e.g.:
 
 To run the tests:
 
