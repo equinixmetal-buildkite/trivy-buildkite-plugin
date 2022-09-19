@@ -129,7 +129,7 @@ fi
 if [[ -z "$targetimageref" ]]; then
   echo "no image to scan"
   display_success "No container image was scanned due to a lack of an image reference. This is fine."
-  exit 0
+  exit $final_status
 fi
 
 # If the image is not present locally, pull it
