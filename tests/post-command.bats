@@ -69,7 +69,7 @@ export TRIVY_EXE_PATH="$(mktemp)"
 
   run "$PWD/hooks/post-command"
 
-  assert_success
+  assert_failure
   assert_output --partial "scanning filesystem"
   assert_output --partial "fs scan failure"
   assert_output --partial "using exit-code=1 option while scanning"

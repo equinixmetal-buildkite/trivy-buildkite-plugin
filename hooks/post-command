@@ -95,13 +95,11 @@ fi
 
 echo "--- scanning filesystem"
 trivy fs "${args[@]}" "${fsargs[@]}" .
-status=$?
-
 # Status gets overwritten by the next scan, so we save it here
 # This way, we actually exit with a failure.
-final_status=$status
+final_status=$?
 
-if [[ $status -ne 0 ]]; then
+if [[ $final_status -ne 0 ]]; then
   display_error "trivy found vulnerabilities in repository. See the job output for details."
 else
   display_success "trivy didn't find any relevant vulnerabilities in the repository"
@@ -131,7 +129,7 @@ fi
 if [[ -z "$targetimageref" ]]; then
   echo "no image to scan"
   display_success "No container image was scanned due to a lack of an image reference. This is fine."
-  exit 0
+  exit $final_status
 fi
 
 # If the image is not present locally, pull it
