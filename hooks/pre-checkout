@@ -85,6 +85,9 @@ trivy_os_cpu_string() {
     *arm64*)
       RUNTIME_CPU=ARM64
       ;;
+    *aarch64*)
+      RUNTIME_CPU=ARM64
+      ;;
     *)
       die 3 "failed to determine current computer's cpu"
       ;;
