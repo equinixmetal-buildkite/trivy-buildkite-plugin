@@ -68,7 +68,7 @@ export PATH="${PATH}:${TRIVY_EXE_PATH%/*}"
 args=()
 fsargs=()
 
-if [[ "${BUILDKITE_PLUGIN_TRIVY_EXIT_CODE:-0}" -eq 1 ]] ; then
+if [[ "${BUILDKITE_PLUGIN_TRIVY_EXIT_CODE:-1}" -eq 1 ]] ; then
   args+=("--exit-code" "1")
   echo "using exit-code=1 option while scanning"
 else
