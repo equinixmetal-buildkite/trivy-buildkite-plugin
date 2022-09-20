@@ -10,8 +10,8 @@ export TRIVY_EXE_PATH="$(mktemp)"
 @test "fs scan of a test app" {
   # TODO(jaosorior): Change the exit code if we change the default
   stub trivy "fs --exit-code 0 --security-checks vuln,config . : echo fs scan success"
-  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
-    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
+  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
+    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context trivy-container-scan : echo no image scan happened" \
 
   run "$PWD/hooks/post-command"
 
@@ -28,8 +28,8 @@ export TRIVY_EXE_PATH="$(mktemp)"
   export BUILDKITE_PLUGIN_TRIVY_EXIT_CODE=1
 
   stub trivy "fs --exit-code 1 --security-checks vuln,config . : echo fs scan success"
-  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
-    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
+  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
+    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context trivy-container-scan : echo no image scan happened" \
 
   run "$PWD/hooks/post-command"
 
@@ -46,8 +46,8 @@ export TRIVY_EXE_PATH="$(mktemp)"
   export BUILDKITE_PLUGIN_TRIVY_EXIT_CODE=0
 
   stub trivy "fs --exit-code 0 --security-checks vuln,config . : echo fs scan success"
-  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
-    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
+  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
+    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context trivy-container-scan : echo no image scan happened" \
 
   run "$PWD/hooks/post-command"
 
@@ -64,12 +64,12 @@ export TRIVY_EXE_PATH="$(mktemp)"
   export BUILDKITE_PLUGIN_TRIVY_EXIT_CODE=1
 
   stub trivy "fs --exit-code 1 --security-checks vuln,config . : exit 1"
-  stub buildkite-agent "annotate --style error \"trivy found vulnerabilities in repository. See the job output for details.<br />\" --context publish --append : echo fs scan failure" \
-    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
+  stub buildkite-agent "annotate --style error \"trivy found vulnerabilities in repository. See the job output for details.<br />\" --context trivy-fs-scan : echo fs scan failure" \
+    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context trivy-container-scan : echo no image scan happened" \
 
   run "$PWD/hooks/post-command"
 
-  assert_success
+  assert_failure
   assert_output --partial "scanning filesystem"
   assert_output --partial "fs scan failure"
   assert_output --partial "using exit-code=1 option while scanning"
@@ -83,8 +83,8 @@ export TRIVY_EXE_PATH="$(mktemp)"
   export BUILDKITE_PLUGIN_TRIVY_EXIT_CODE=1
 
   stub trivy "fs --exit-code 1 --severity $BUILDKITE_PLUGIN_TRIVY_SEVERITY --security-checks vuln,config . : echo fs scan success"
-  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
-    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
+  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
+    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context trivy-container-scan : echo no image scan happened" \
 
   run "$PWD/hooks/post-command"
 
@@ -101,8 +101,8 @@ export TRIVY_EXE_PATH="$(mktemp)"
   export BUILDKITE_PLUGIN_TRIVY_EXIT_CODE=1
 
   stub trivy "fs --exit-code 1 --severity $BUILDKITE_PLUGIN_TRIVY_SEVERITY --security-checks vuln,config . : echo fs scan success"
-  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
-    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
+  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
+    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context trivy-container-scan : echo no image scan happened" \
 
   run "$PWD/hooks/post-command"
 
@@ -119,8 +119,8 @@ export TRIVY_EXE_PATH="$(mktemp)"
   export BUILDKITE_PLUGIN_TRIVY_EXIT_CODE=1
 
   stub trivy "fs --exit-code 1 --severity $BUILDKITE_PLUGIN_TRIVY_SEVERITY --security-checks vuln,config . : echo fs scan success"
-  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
-    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
+  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
+    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context trivy-container-scan : echo no image scan happened" \
 
   run "$PWD/hooks/post-command"
 
@@ -135,8 +135,8 @@ export TRIVY_EXE_PATH="$(mktemp)"
 @test "fs scan of a test app with only vulnerbility security check" {
   export BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS="vuln"
   stub trivy "fs --exit-code 0 --security-checks $BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS . : echo fs scan success"
-  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
-    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
+  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
+    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context trivy-container-scan : echo no image scan happened" \
 
   run "$PWD/hooks/post-command"
 
@@ -151,8 +151,8 @@ export TRIVY_EXE_PATH="$(mktemp)"
 @test "fs scan of a test app with vulnerbility and configuration security check" {
   export BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS="vuln,config"
   stub trivy "fs --exit-code 0 --security-checks $BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS . : echo fs scan success"
-  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
-    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
+  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
+    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context trivy-container-scan : echo no image scan happened" \
 
   run "$PWD/hooks/post-command"
 
@@ -167,8 +167,8 @@ export TRIVY_EXE_PATH="$(mktemp)"
 @test "fs scan of a test app with vulnerbility,secret and configuration security check" {
   export BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS="vuln,secret,config"
   stub trivy "fs --exit-code 0 --security-checks $BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS . : echo fs scan success"
-  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
-    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context publish --append : echo no image scan happened" \
+  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
+    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context trivy-container-scan : echo no image scan happened" \
 
   run "$PWD/hooks/post-command"
 
@@ -189,8 +189,8 @@ export TRIVY_EXE_PATH="$(mktemp)"
   stub docker \
     "images -q $BUILDKITE_PLUGIN_TRIVY_IMAGE_REF : echo ''" \
     "pull $BUILDKITE_PLUGIN_TRIVY_IMAGE_REF : echo 'pulled image'"
-  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
-    "annotate --style success \"trivy didn't find any relevant vulnerabilities in the container image<br />\" --context publish --append : echo container image scan success" \
+  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
+    "annotate --style success \"trivy didn't find any relevant vulnerabilities in the container image<br />\" --context trivy-container-scan : echo container image scan success" \
 
   run "$PWD/hooks/post-command"
 
@@ -212,8 +212,8 @@ export TRIVY_EXE_PATH="$(mktemp)"
     "image --exit-code 0 $BUILDKITE_PLUGIN_TRIVY_IMAGE_REF : echo container image scan success"
   stub docker \
     "images -q $BUILDKITE_PLUGIN_TRIVY_IMAGE_REF : echo 'Found image!'"
-  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
-    "annotate --style success \"trivy didn't find any relevant vulnerabilities in the container image<br />\" --context publish --append : echo container image scan success" \
+  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
+    "annotate --style success \"trivy didn't find any relevant vulnerabilities in the container image<br />\" --context trivy-container-scan : echo container image scan success" \
 
   run "$PWD/hooks/post-command"
 
@@ -236,8 +236,8 @@ export TRIVY_EXE_PATH="$(mktemp)"
   stub docker \
     "images -q $BUILDKITE_PLUGIN_TRIVY_IMAGE_REF : echo ''" \
     "pull $BUILDKITE_PLUGIN_TRIVY_IMAGE_REF : echo 'pulled image'"
-  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
-    "annotate --style error \"trivy found vulnerabilities in the container image. See the job output for details.<br />\" --context publish --append : echo container image scan failure" \
+  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
+    "annotate --style error \"trivy found vulnerabilities in the container image. See the job output for details.<br />\" --context trivy-container-scan : echo container image scan failure" \
 
   run "$PWD/hooks/post-command"
 
@@ -263,8 +263,8 @@ export TRIVY_EXE_PATH="$(mktemp)"
     "image --exit-code 0 $_TAGS_0 : echo container image scan success"
   stub docker \
     "images -q $_TAGS_0 : echo 'Found image!'"
-  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
-    "annotate --style success \"trivy didn't find any relevant vulnerabilities in the container image<br />\" --context publish --append : echo container image scan success" \
+  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
+    "annotate --style success \"trivy didn't find any relevant vulnerabilities in the container image<br />\" --context trivy-container-scan : echo container image scan success" \
 
   run "$PWD/hooks/post-command"
 
@@ -290,8 +290,8 @@ export TRIVY_EXE_PATH="$(mktemp)"
   stub docker \
     "images -q $_TAGS_0 : echo ''" \
     "pull $_TAGS_0 : echo 'pulled image'"
-  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context publish --append : echo fs scan success" \
-    "annotate --style success \"trivy didn't find any relevant vulnerabilities in the container image<br />\" --context publish --append : echo container image scan success" \
+  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
+    "annotate --style success \"trivy didn't find any relevant vulnerabilities in the container image<br />\" --context trivy-container-scan : echo container image scan success" \
 
   run "$PWD/hooks/post-command"
 

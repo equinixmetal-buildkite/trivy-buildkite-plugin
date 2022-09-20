@@ -9,6 +9,15 @@
         "matchStrings": ["readonly TRIVY_DEFAULT_VERSION=\"(?<currentValue>.*?)\"\\s"],
         "depNameTemplate": "aquasec/trivy",
         "datasourceTemplate": "docker"
+      },
+      {
+        "fileMatch": [
+          "^Makefile$"
+        ],
+        "matchStrings": [
+            "[A-Z_]+_IMAGE=(?<depName>.*?):(?<currentValue>.*?)\\n"
+        ],
+        "datasourceTemplate": "docker"
       }
     ]
   }

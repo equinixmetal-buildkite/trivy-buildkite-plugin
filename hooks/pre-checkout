@@ -29,7 +29,7 @@
 # - which
 # - mkdir
 
-readonly TRIVY_DEFAULT_VERSION="0.31.3"
+readonly TRIVY_DEFAULT_VERSION="0.32.0"
 export TRIVY_VERSION="${BUILDKITE_PLUGIN_TRIVY_VERSION:-$TRIVY_DEFAULT_VERSION}"
 REMOVE_FILE_ON_ERR=""
 
@@ -42,13 +42,7 @@ die() {
 display_error() {
   message="$1"
   echo "🚨 $message" >&2
-  buildkite-agent annotate --style error "$message<br />" --context publish --append
-}
-
-display_success() {
-  message="$1"
-  echo "$message"
-  buildkite-agent annotate --style success "$message<br />" --context publish --append
+  buildkite-agent annotate --style error "$message<br />" --context trivy-scan
 }
 
 # trivy_os_cpu_string retrieves information from the runtime
