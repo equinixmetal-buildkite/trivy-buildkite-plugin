@@ -25,7 +25,7 @@ step with the default plugin configuration parameters:
 steps:
   - command: ls
     plugins:
-      - equinixmetal-buildkite/trivy#v1.15.0: ~
+      - equinixmetal-buildkite/trivy#v1.15.0:
 ```
 
 ## Additional examples
@@ -37,7 +37,7 @@ steps:
   - command: ls
     plugins:
       - equinixmetal-buildkite/trivy#v1.15.0:
-        exit-code: 1
+          exit-code: 1
 ```
 
 Specify the `--severity` option as a plugin parameter in `pipeline.yml` to scan specific type of vulnerabilities. Below is an example for scanning `CRITICAL` vulnerabilities:
@@ -47,7 +47,7 @@ steps:
   - command: ls
     plugins:
       - equinixmetal-buildkite/trivy#v1.15.0:
-        severity: "CRITICAL"
+          severity: "CRITICAL"
 ```
 
 ## Configuration
