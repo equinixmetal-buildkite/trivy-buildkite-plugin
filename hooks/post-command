@@ -76,11 +76,10 @@ else
   echo "using exit-code=0 option while scanning"
 fi
 
-# if [[ "${BUILDKITE_PLUGIN_TRIVY_IGNORE_UNFIXED:-false}" -eq true ]] ; then
-#   export args+=("--ignore-unfixed true")
-# else
-#   export args+=("--ignore-unfixed false")
-# fi
+if [[ "${BUILDKITE_PLUGIN_TRIVY_IGNORE_UNFIXED:-false}" -eq true ]] ; then
+  args+=("--ignore-unfixed")
+  echo "ignore-unfixed is set. Will ignore unfixed vulnerabilities"
+fi
 
 if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SEVERITY:-}" ]] ; then
   args+=("--severity" "${BUILDKITE_PLUGIN_TRIVY_SEVERITY}")
