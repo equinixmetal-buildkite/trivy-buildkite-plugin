@@ -85,3 +85,25 @@ To run the tests:
 ```shell
 make test
 ```
+
+Run the tests with debug logging enabled:
+
+```shell
+TEST_DEBUG=1 make test
+```
+
+To enable debug logging for a stubbed command in the test, you need to set or
+uncomment the export for the necessary command in the `.bats` file.
+
+e.g. to view the debug logging for the `trivy` command, set the following
+at the top of the `.bats` file:
+
+```shell
+export TRIVY_STUB_DEBUG=/dev/tty
+```
+
+and then run the tests with debug logging enabled:
+
+```shell
+TEST_DEBUG=1 make test
+```

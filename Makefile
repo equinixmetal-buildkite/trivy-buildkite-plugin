@@ -9,13 +9,21 @@ PLUGIN_REF=equinixmetal-buildkite/trivy
 # Must be set before doing a release
 TAG?=
 
+# Enable debug logging for plugin-tester image
+TEST_DEBUG?=
+ifdef TEST_DEBUG
+	TTY_FLAG = -t
+else
+	TTY_FLAG =
+endif
+
 .PHONY: lint
 lint: | plugin-arg-docs
 	docker run --rm -v "$$PWD:/plugin:ro" $(BUILDKITE_LINTER_IMAGE) --id $(PLUGIN_REF)
 
 .PHONY: test
 test:
-	docker run --rm -v "$$PWD:/plugin:ro" $(BUILDKITE_TESTER_IMAGE)
+	docker run --rm $(TTY_FLAG) -v "$$PWD:/plugin:ro" $(BUILDKITE_TESTER_IMAGE)
 
 .PHONY: plugin-arg-docs
 plugin-arg-docs: ## Ensures that the plugin arguments are documented
