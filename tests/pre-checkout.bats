@@ -4,12 +4,16 @@ load '/usr/local/lib/bats/load.bash'
 
 # Uncomment the following line to debug stub failures
 # export BUILDKITE_AGENT_STUB_DEBUG=/dev/tty
+# export CURL_STUB_DEBUG=/dev/tty
+# export MKTEMP_STUB_DEBUG=/dev/tty
+# export SHA256SUM_STUB_DEBUG=/dev/tty
+# export TAR_STUB_DEBUG=/dev/tty
 
 readonly TESTV='6.6.6'
 
 setup() {
   export BUILDKITE_PLUGIN_TRIVY_VERSION="${TESTV}"
-  stub buildkite-agent "* : exit 0"
+  stub buildkite-agent "\* \* \* \* \* : exit 0"
 }
 
 teardown() {
@@ -53,7 +57,7 @@ teardown() {
 
 @test "download_trivy: curl hashes file failure" {
   stub uname "-a : echo FreeBSD amd64"
-  stub curl "* : exit 66"
+  stub curl "\* \* \* : exit 66"
 
   run "$PWD/hooks/pre-checkout"
 
@@ -65,7 +69,7 @@ teardown() {
 
 @test "download_trivy: no hashes" {
   stub uname "-a : echo FreeBSD amd64"
-  stub curl "* : echo ''"
+  stub curl "\* \* \* : echo ''"
 
   run "$PWD/hooks/pre-checkout"
 
@@ -77,7 +81,7 @@ teardown() {
 
 @test "download_trivy: no matching hash" {
   stub uname "-a : echo FreeBSD amd64"
-  stub curl "* : printf '%s\n%s\n' 'foo foo' 'bar bar'"
+  stub curl "\* \* \* : printf '%s\n%s\n' 'foo foo' 'bar bar'"
 
   run "$PWD/hooks/pre-checkout"
 
@@ -90,7 +94,7 @@ teardown() {
 @test "download_trivy: mktemp failure" {
   stub uname "-a : echo FreeBSD amd64"
   stub curl "--fail -L https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_checksums.txt : echo '82678d08fe942e81f8bb72a13e70bc3696f9a69756bdb2ee507e0f57cb5b3777  trivy_${TESTV}_FreeBSD-64bit.tar.gz'"
-  stub mktemp "* : exit 123"
+  stub mktemp "\* : exit 123"
 
   run "$PWD/hooks/pre-checkout"
 
@@ -142,7 +146,7 @@ teardown() {
   stub curl \
     "--fail -L https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_checksums.txt : echo 'AAAA  trivy_${TESTV}_FreeBSD-64bit.tar.gz'" \
     "--fail -L -o ${tar_file} https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_FreeBSD-64bit.tar.gz : echo foobar > ${tar_file}"
-  stub sha256sum "* : echo"
+  stub sha256sum "\* : echo"
 
   run "$PWD/hooks/pre-checkout"
 
@@ -163,7 +167,7 @@ teardown() {
   stub curl \
     "--fail -L https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_checksums.txt : echo 'AAAA  trivy_${TESTV}_FreeBSD-64bit.tar.gz'" \
     "--fail -L -o ${tar_file} https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_FreeBSD-64bit.tar.gz : echo foobar > ${tar_file}"
-  stub sha256sum "* : echo 'hailsatan  ${tar_file}'"
+  stub sha256sum "\* : echo 'hailsatan  ${tar_file}'"
 
   run "$PWD/hooks/pre-checkout"
 
@@ -184,8 +188,8 @@ teardown() {
   stub curl \
     "--fail -L https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_checksums.txt : echo 'AAAA  trivy_${TESTV}_FreeBSD-64bit.tar.gz'" \
     "--fail -L -o ${tar_file} https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_FreeBSD-64bit.tar.gz : echo foobar > ${tar_file}"
-  stub sha256sum "* : echo 'AAAA  ${tar_file}'"
-  stub tar "* : exit 123"
+  stub sha256sum "\* : echo 'AAAA  ${tar_file}'"
+  stub tar "-C \* -xzvf \* : exit 123"
 
   run "$PWD/hooks/pre-checkout"
 
@@ -207,8 +211,8 @@ teardown() {
   stub curl \
     "--fail -L https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_checksums.txt : echo 'AAAA  trivy_${TESTV}_FreeBSD-64bit.tar.gz'" \
     "--fail -L -o ${tar_file} https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_FreeBSD-64bit.tar.gz : echo foobar > ${tar_file}"
-  stub sha256sum "* : echo 'AAAA  ${tar_file}'"
-  stub tar "* : exit 0"
+  stub sha256sum "\* : echo 'AAAA  ${tar_file}'"
+  stub tar "-C \* -xzvf \* : exit 0"
 
   run "$PWD/hooks/pre-checkout"
 
@@ -249,8 +253,8 @@ teardown() {
   stub curl \
     "--fail -L https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_checksums.txt : echo 'AAAA  trivy_${TESTV}_FreeBSD-64bit.tar.gz'" \
     "--fail -L -o ${tar_file} https://github.com/aquasecurity/trivy/releases/download/v${TESTV}/trivy_${TESTV}_FreeBSD-64bit.tar.gz : echo foobar > ${tar_file}"
-  stub sha256sum "* : echo 'AAAA  ${tar_file}'"
-  stub tar "* : touch ${trivy_exe}"
+  stub sha256sum "\* : echo 'AAAA  ${tar_file}'"
+  stub tar "-C \* -xzvf \* : touch ${trivy_exe}"
 
   run "$PWD/hooks/pre-checkout"
 
