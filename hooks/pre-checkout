@@ -255,6 +255,7 @@ WHICH_TRIVY_EXE="$(which trivy)"
 # shellcheck disable=SC2181
 if [[ "$?" -eq 0 ]] && [[ -f "${WHICH_TRIVY_EXE}" ]]; then
   echo "${WHICH_TRIVY_EXE}"
+  export TRIVY_EXE_PATH="${WHICH_TRIVY_EXE}"
   exit 0
 fi
 
