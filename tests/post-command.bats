@@ -201,6 +201,32 @@ default_exit_code="--exit-code 1"
   unstub buildkite-agent
 }
 
+@test "fs scan of a test app skipping a file" {
+  export BUILDKITE_PLUGIN_TRIVY_SKIP_FILES="test.txt"
+  stub trivy "fs $default_exit_code --skip-files $BUILDKITE_PLUGIN_TRIVY_SKIP_FILES . : echo fs scan success"
+  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
+    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context trivy-container-scan : echo no image scan happened" \
+
+  run "$PWD/hooks/post-command"
+
+  assert_success
+  assert_output --partial "scanning filesystem"
+  assert_output --partial "skipping files '$BUILDKITE_PLUGIN_TRIVY_SKIP_FILES' from scan"
+}
+
+@test "fs scan of a test app skipping a dir" {
+  export BUILDKITE_PLUGIN_TRIVY_SKIP_DIRS="test"
+  stub trivy "fs $default_exit_code --skip-dirs $BUILDKITE_PLUGIN_TRIVY_SKIP_DIRS . : echo fs scan success"
+  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
+    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context trivy-container-scan : echo no image scan happened" \
+
+  run "$PWD/hooks/post-command"
+
+  assert_success
+  assert_output --partial "scanning filesystem"
+  assert_output --partial "skipping directories '$BUILDKITE_PLUGIN_TRIVY_SKIP_DIRS' from scan"
+}
+
 @test "scan of image reference not present locally" {
   export BUILDKITE_PLUGIN_TRIVY_IMAGE_REF="nginx:latest"
 

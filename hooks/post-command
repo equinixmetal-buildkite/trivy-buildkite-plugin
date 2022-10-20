@@ -90,6 +90,16 @@ else
   fsargs+=("--security-checks" "vuln,config")
 fi
 
+if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SKIP_FILES:-}" ]] ; then
+  fsargs+=("--skip-files" "${BUILDKITE_PLUGIN_TRIVY_SKIP_FILES}")
+  echo "skipping files '$BUILDKITE_PLUGIN_TRIVY_SKIP_FILES' from scan "
+fi
+
+if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SKIP_DIRS:-}" ]] ; then
+  fsargs+=("--skip-dirs" "${BUILDKITE_PLUGIN_TRIVY_SKIP_DIRS}")
+  echo "skipping directories '$BUILDKITE_PLUGIN_TRIVY_SKIP_DIRS' from scan "
+fi
+
 echo "--- scanning filesystem"
 trivy fs "${args[@]}" "${fsargs[@]}" .
 # Status gets overwritten by the next scan, so we save it here
