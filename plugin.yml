@@ -1,6 +1,6 @@
 name: Trivy
-description: Trivy FS Scan
-author: Hari
+description: Trivy Security Scanning
+author: Equinix Metal
 requirements:
   - bash
   - docker
@@ -21,5 +21,9 @@ configuration:
     security-checks:
       type: string
     image-ref:
+      type: string
+    skip-files:
+      type: string
+    skip-dirs:
       type: string
   additionalProperties: false

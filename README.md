@@ -68,6 +68,14 @@ Controls whether to display only fixed vulnerabilities. (Defaults to false)
 
 Controls the security checks to be performed. (Defaults to "vuln,config")
 
+### `skip-files` (Optional, string)
+
+Controls the files to be skipped during the scan. (Defaults to "")
+
+### `skip-dirs` (Optional, string)
+
+Controls the directories to be skipped during the scan. (Defaults to "")
+
 ### `image-ref` (Optional, string)
 
 **Important**: Please ensure the target Docker image is built prior to the trivy plugin running when using this option. The trivy plugin does not build Docker images; it only scans existing images.
