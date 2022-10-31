@@ -25,7 +25,7 @@ step with the default plugin configuration parameters:
 steps:
   - command: ls
     plugins:
-      - equinixmetal-buildkite/trivy#v1.16.4:
+      - equinixmetal-buildkite/trivy#v1.16.5:
 ```
 
 ## Additional examples
@@ -36,7 +36,7 @@ Specify the `--exit-code` option as a plugin parameter in `pipeline.yml` to fail
 steps:
   - command: ls
     plugins:
-      - equinixmetal-buildkite/trivy#v1.16.4:
+      - equinixmetal-buildkite/trivy#v1.16.5:
           exit-code: 1
 ```
 
@@ -46,7 +46,7 @@ Specify the `--severity` option as a plugin parameter in `pipeline.yml` to scan 
 steps:
   - command: ls
     plugins:
-      - equinixmetal-buildkite/trivy#v1.16.4:
+      - equinixmetal-buildkite/trivy#v1.16.5:
           severity: "CRITICAL"
 ```
 
