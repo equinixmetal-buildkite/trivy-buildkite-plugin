@@ -100,7 +100,7 @@ if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SKIP_DIRS:-}" ]] ; then
   echo "skipping directories '$BUILDKITE_PLUGIN_TRIVY_SKIP_DIRS' from scan "
 fi
 
-echo "--- scanning filesystem"
+echo "+++ scanning filesystem"
 trivy fs "${args[@]}" "${fsargs[@]}" .
 # Status gets overwritten by the next scan, so we save it here
 # This way, we actually exit with a failure.
@@ -146,7 +146,7 @@ else
   echo "image '$targetimageref' already present locally"
 fi
 
-echo "--- scanning container image"
+echo "+++ scanning container image"
 trivy image "${args[@]}" "$targetimageref"
 status=$?
 
