@@ -86,7 +86,7 @@ Controls the image reference to be scanned. If no image is specified, the image 
 
 Controls the version of trivy to be used.
 
-### `helm-overrides` (Optional, string)
+### `helm-overrides-file` (Optional, string)
 
 To pass helm override values to trivy config scan
 
