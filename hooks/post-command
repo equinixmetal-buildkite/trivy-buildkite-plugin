@@ -72,22 +72,9 @@ final_exit_code="${BUILDKITE_PLUGIN_TRIVY_EXIT_CODE:-1}"
 args+=("--exit-code" "$final_exit_code")
 echo "using exit-code=$final_exit_code option while scanning"
 
-if [[ "${BUILDKITE_PLUGIN_TRIVY_IGNORE_UNFIXED:-false}" == true ]] ; then
-  args+=("--ignore-unfixed")
-  echo "ignore-unfixed is set. Will ignore unfixed vulnerabilities"
-fi
-
 if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SEVERITY:-}" ]] ; then
   args+=("--severity" "${BUILDKITE_PLUGIN_TRIVY_SEVERITY}")
   echo "using non-default severity types"
-fi
-
-if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS:-}" ]] ; then
-  fsargs+=("--security-checks" "${BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS}")
-  echo "using $BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS security checks"
-else
-  echo "using default security checks"
-  fsargs+=("--security-checks" "vuln,config")
 fi
 
 if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SKIP_FILES:-}" ]] ; then
@@ -98,6 +85,24 @@ fi
 if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SKIP_DIRS:-}" ]] ; then
   fsargs+=("--skip-dirs" "${BUILDKITE_PLUGIN_TRIVY_SKIP_DIRS}")
   echo "skipping directories '$BUILDKITE_PLUGIN_TRIVY_SKIP_DIRS' from scan "
+fi
+
+if [[ -n "${BUILDKITE_PLUGIN_TRIVY_HELM_OVERRIDES_FILE:-}" ]]; then
+	echo "scanning with helm overrides"
+	trivy conf --helm-values helm-overrides.yaml "${args[@]}" "${fsargs[@]}" .
+fi
+
+if [[ "${BUILDKITE_PLUGIN_TRIVY_IGNORE_UNFIXED:-false}" == true ]] ; then
+  args+=("--ignore-unfixed")
+  echo "ignore-unfixed is set. Will ignore unfixed vulnerabilities"
+fi
+
+if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS:-}" ]] ; then
+  fsargs+=("--security-checks" "${BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS}")
+  echo "using $BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS security checks"
+else
+  echo "using default security checks"
+  fsargs+=("--security-checks" "vuln,config")
 fi
 
 echo "+++ scanning filesystem"
