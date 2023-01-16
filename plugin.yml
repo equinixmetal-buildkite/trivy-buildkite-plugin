@@ -26,4 +26,6 @@ configuration:
       type: string
     skip-dirs:
       type: string
+    helm-overrides-file:
+      type: string 
   additionalProperties: false
