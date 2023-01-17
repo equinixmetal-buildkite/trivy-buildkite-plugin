@@ -203,7 +203,7 @@ default_exit_code="--exit-code 1"
 
 @test "fs scan of a test app skipping a file" {
   export BUILDKITE_PLUGIN_TRIVY_SKIP_FILES="test.txt"
-  stub trivy "fs $default_exit_code --skip-files $BUILDKITE_PLUGIN_TRIVY_SKIP_FILES . : echo fs scan success"
+  stub trivy "fs $default_exit_code --skip-files $BUILDKITE_PLUGIN_TRIVY_SKIP_FILES --security-checks vuln,config . : echo fs scan success"
   stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
     "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context trivy-container-scan : echo no image scan happened" \
 
@@ -216,7 +216,7 @@ default_exit_code="--exit-code 1"
 
 @test "fs scan of a test app skipping a dir" {
   export BUILDKITE_PLUGIN_TRIVY_SKIP_DIRS="test"
-  stub trivy "fs $default_exit_code --skip-dirs $BUILDKITE_PLUGIN_TRIVY_SKIP_DIRS . : echo fs scan success"
+  stub trivy "fs $default_exit_code --skip-dirs $BUILDKITE_PLUGIN_TRIVY_SKIP_DIRS --security-checks vuln,config . : echo fs scan success"
   stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
     "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context trivy-container-scan : echo no image scan happened" \
 
