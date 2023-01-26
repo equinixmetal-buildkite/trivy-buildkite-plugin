@@ -56,6 +56,11 @@ steps:
 
 Controls whether the security scan is blocking or not. This is done by setting the exit code of the plugin. If the exit code is set to 0, the pipeline will continue. If the exit code is set to 1, the pipeline will fail. (Defaults to 0)
 
+### `timeout` (Optional, string)
+
+Controls the maximum amount of time a scan will run for by passing the
+`--timeout` argument to trivy.
+
 ### `severity` (Optional, string)
 
 Controls the severity of the vulnerabilities to be scanned. (Defaults to "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL")
