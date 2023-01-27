@@ -99,6 +99,24 @@ default_exit_code="--exit-code 1"
   unstub buildkite-agent
 }
 
+@test "fs scan of a test app with non-default timeout" {
+  export BUILDKITE_PLUGIN_TRIVY_TIMEOUT="6h6m6s"
+  export BUILDKITE_PLUGIN_TRIVY_EXIT_CODE=1
+
+  stub trivy "fs --exit-code 1 --timeout $BUILDKITE_PLUGIN_TRIVY_TIMEOUT --security-checks vuln,config . : echo fs scan success"
+  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
+    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context trivy-container-scan : echo no image scan happened" \
+
+  run "$PWD/hooks/post-command"
+
+  assert_success
+  assert_output --partial "scanning filesystem"
+  assert_output --partial "using non-default timeout: '${BUILDKITE_PLUGIN_TRIVY_TIMEOUT}'"
+
+  unstub trivy
+  unstub buildkite-agent
+}
+
 @test "fs scan of a test app with non-default severity type CRITICAL" {
   export BUILDKITE_PLUGIN_TRIVY_SEVERITY="CRITICAL"
   export BUILDKITE_PLUGIN_TRIVY_EXIT_CODE=1

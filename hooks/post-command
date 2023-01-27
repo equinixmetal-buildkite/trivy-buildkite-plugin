@@ -72,6 +72,11 @@ final_exit_code="${BUILDKITE_PLUGIN_TRIVY_EXIT_CODE:-1}"
 args+=("--exit-code" "$final_exit_code")
 echo "using exit-code=$final_exit_code option while scanning"
 
+if [[ -n "${BUILDKITE_PLUGIN_TRIVY_TIMEOUT:-}" ]] ; then
+  args+=("--timeout" "${BUILDKITE_PLUGIN_TRIVY_TIMEOUT}")
+  echo "using non-default timeout: '${BUILDKITE_PLUGIN_TRIVY_TIMEOUT}'"
+fi
+
 if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SEVERITY:-}" ]] ; then
   args+=("--severity" "${BUILDKITE_PLUGIN_TRIVY_SEVERITY}")
   echo "using non-default severity types"
