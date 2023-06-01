@@ -52,7 +52,7 @@ steps:
 
 ## Configuration
 
-### `exit-code` (Optional, array)
+### `exit-code` (Optional, integer)
 
 Controls whether the security scan is blocking or not. This is done by setting the exit code of the plugin. If the exit code is set to 0, the pipeline will continue. If the exit code is set to 1, the pipeline will fail. (Defaults to 0)
 
