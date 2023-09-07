@@ -12,12 +12,12 @@ load '/usr/local/lib/bats/load.bash'
 readonly TESTV='6.6.6'
 
 setup() {
-  export BUILDKITE_PLUGIN_TRIVY_VERSION="${TESTV}"
+  export BUILDKITE_PLUGIN_TRIVY_TRIVY_VERSION="${TESTV}"
   stub buildkite-agent "\* \* \* \* \* : exit 0"
 }
 
 teardown() {
-  unset BUILDKITE_PLUGIN_TRIVY_VERSION
+  unset BUILDKITE_PLUGIN_TRIVY_TRIVY_VERSION
   # Handle scenarios where the stub is never called by returning 0.
   # This is because unstub throws an error if the stub was never
   # executed. We need to do so because there are scenarios where
