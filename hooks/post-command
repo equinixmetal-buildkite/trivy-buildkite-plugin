@@ -92,10 +92,10 @@ if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SKIP_DIRS:-}" ]] ; then
   echo "skipping directories '$BUILDKITE_PLUGIN_TRIVY_SKIP_DIRS' from scan "
 fi
 
-if [[ -n "${BUILDKITE_PLUGIN_TRIVY_HELM_OVERRIDES_FILE:-}" ]]; then
-	echo "scanning with helm overrides"
-	trivy conf --helm-values "${BUILDKITE_PLUGIN_TRIVY_HELM_OVERRIDES_FILE}" "${args[@]}" "${fsargs[@]}" .
-fi
+#if [[ -n "${BUILDKITE_PLUGIN_TRIVY_HELM_OVERRIDES_FILE:-}" ]]; then
+#	echo "scanning with helm overrides"
+#	trivy conf --helm-values "${BUILDKITE_PLUGIN_TRIVY_HELM_OVERRIDES_FILE}" "${args[@]}" "${fsargs[@]}" .
+#fi
 
 if [[ "${BUILDKITE_PLUGIN_TRIVY_IGNORE_UNFIXED:-false}" == true ]] ; then
   args+=("--ignore-unfixed")
@@ -111,7 +111,7 @@ else
 fi
 
 echo "+++ scanning filesystem"
-trivy fs "${args[@]}" "${fsargs[@]}" .
+trivy fs .
 # Status gets overwritten by the next scan, so we save it here
 # This way, we actually exit with a failure.
 final_status=$?
