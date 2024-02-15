@@ -111,7 +111,7 @@ else
 fi
 
 echo "+++ scanning filesystem"
-trivy fs "${args[@]}" "${fsargs[@]}" .
+trivy --debug fs .
 # Status gets overwritten by the next scan, so we save it here
 # This way, we actually exit with a failure.
 final_status=$?
