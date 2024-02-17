@@ -95,6 +95,9 @@ Controls the version of trivy to be used.
 
 To pass helm override values to trivy config scan
 
+### `debug` (Optional, boolean)
+
+Enable debug flag for trivy.
 
 ## Developing
 

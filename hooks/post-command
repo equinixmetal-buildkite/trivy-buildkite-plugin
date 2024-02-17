@@ -72,6 +72,11 @@ final_exit_code="${BUILDKITE_PLUGIN_TRIVY_EXIT_CODE:-1}"
 args+=("--exit-code" "$final_exit_code")
 echo "using exit-code=$final_exit_code option while scanning"
 
+if [[ "${BUILDKITE_PLUGIN_TRIVY_DEBUG:-false}" == true ]] ; then
+  args+=("--debug")
+  echo "enabling debug output for trivy"
+fi
+
 if [[ -n "${BUILDKITE_PLUGIN_TRIVY_TIMEOUT:-}" ]] ; then
   args+=("--timeout" "${BUILDKITE_PLUGIN_TRIVY_TIMEOUT}")
   echo "using non-default timeout: '${BUILDKITE_PLUGIN_TRIVY_TIMEOUT}'"

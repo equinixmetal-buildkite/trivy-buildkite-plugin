@@ -28,4 +28,6 @@ configuration:
       type: string
     helm-overrides-file:
       type: string 
+    debug:
+      type: boolean
   additionalProperties: false
