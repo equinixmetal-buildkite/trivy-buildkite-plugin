@@ -71,11 +71,11 @@ Controls whether to display only fixed vulnerabilities. (Defaults to false)
 
 ### (DEPRECATED) `security-checks` (Optional, string)
 
-Controls the security checks to be performed. This option is deprecated and may be removed in the future. (Defaults to "vuln,config")
+Controls the security checks to be performed. This option is deprecated and may be removed in the future. Use `scanners` instead. (Defaults to "vuln,misconfig")
 
 ### `scanners` (Optional, string)
 
-Controls the security scanners to be used. This replaced security-checks (Defaults to "vuln,config")
+Controls the security scanners to be used. This replaced security-checks (Defaults to "vuln,misconfig")
 
 ### `skip-files` (Optional, string)
 

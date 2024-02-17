@@ -18,9 +18,9 @@ configuration:
       type: boolean
     trivy-version:      
       type: string
-    security-checks:
-      type: string
     scanners:
+      type: string
+    security-checks:
       type: string
     image-ref:
       type: string
