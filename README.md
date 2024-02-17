@@ -69,9 +69,13 @@ Controls the severity of the vulnerabilities to be scanned. (Defaults to "UNKNOW
 
 Controls whether to display only fixed vulnerabilities. (Defaults to false)
 
-### `security-checks` (Optional, string)
+### (DEPRECATED) `security-checks` (Optional, string)
 
-Controls the security checks to be performed. (Defaults to "vuln,config")
+Controls the security checks to be performed. This option is deprecated and may be removed in the future. (Defaults to "vuln,config")
+
+### `scanners` (Optional, string)
+
+Controls the security scanners to be used. This replaced security-checks (Defaults to "vuln,config")
 
 ### `skip-files` (Optional, string)
 

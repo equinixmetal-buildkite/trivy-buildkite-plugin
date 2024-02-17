@@ -107,12 +107,16 @@ if [[ "${BUILDKITE_PLUGIN_TRIVY_IGNORE_UNFIXED:-false}" == true ]] ; then
   echo "ignore-unfixed is set. Will ignore unfixed vulnerabilities"
 fi
 
-if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS:-}" ]] ; then
-  fsargs+=("--security-checks" "${BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS}")
-  echo "using $BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS security checks"
+
+if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SCANNERS:-}" ]] ; then
+  fsargs+=("--scanners" "${BUILDKITE_PLUGIN_TRIVY_SCANNERS}")
+  echo "using $BUILDKITE_PLUGIN_TRIVY_SCANNERS scanners"
+elif [[ -n "${BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS:-}" ]] ; then
+  fsargs+=("--scanners" "${BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS}")
+  echo "using $BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS security checks - DEPRECATED, use scanners instead!"
 else
-  echo "using default security checks"
-  fsargs+=("--security-checks" "vuln,config")
+  echo "using default scanners"
+  fsargs+=("--scanners" "vuln,config")
 fi
 
 echo "+++ scanning filesystem"

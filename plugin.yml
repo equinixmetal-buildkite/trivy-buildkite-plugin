@@ -20,6 +20,8 @@ configuration:
       type: string
     security-checks:
       type: string
+    scanners:
+      type: string
     image-ref:
       type: string
     skip-files:
