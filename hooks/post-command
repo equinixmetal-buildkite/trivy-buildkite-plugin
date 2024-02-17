@@ -93,8 +93,8 @@ if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SKIP_DIRS:-}" ]] ; then
 fi
 
 if [[ -n "${BUILDKITE_PLUGIN_TRIVY_HELM_OVERRIDES_FILE:-}" ]]; then
+	fsargs+=("--helm-values" "${BUILDKITE_PLUGIN_TRIVY_HELM_OVERRIDES_FILE}")
 	echo "scanning with helm overrides"
-	trivy conf --helm-values "${BUILDKITE_PLUGIN_TRIVY_HELM_OVERRIDES_FILE}" "${args[@]}" "${fsargs[@]}" .
 fi
 
 if [[ "${BUILDKITE_PLUGIN_TRIVY_IGNORE_UNFIXED:-false}" == true ]] ; then
