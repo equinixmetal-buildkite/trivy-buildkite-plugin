@@ -1,4 +1,4 @@
-BUILDKITE_TESTER_IMAGE=buildkite/plugin-tester:v4.0.0
+BUILDKITE_TESTER_IMAGE=buildkite/plugin-tester:v4.1.1
 
 # NOTE(jaosorior): This hasn't been released in two years...
 #                  we should ask for a fix.
