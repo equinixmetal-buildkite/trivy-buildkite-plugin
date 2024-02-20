@@ -1,7 +1,7 @@
 steps:
   - label: run bats tests
     plugins:
-      - docker-compose#v4.12.0:
+      - docker-compose#v4.16.0:
           run: tests
   - label: ":sparkles: Lint"
     plugins:
