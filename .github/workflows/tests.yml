@@ -9,14 +9,14 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - run:
         make test
 
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         # This fetches all branches and tags, which helps us lint that we're using the current version
         # in our examples.
@@ -28,7 +28,7 @@ jobs:
     name: Shellcheck
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Run ShellCheck
       uses: ludeeus/action-shellcheck@master
       env:
@@ -40,6 +40,6 @@ jobs:
     env:
       RENOVATE_CONFIG_FILE: renovate.json
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: testing Renovate config
         run: npx -p renovate renovate-config-validator
