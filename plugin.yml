@@ -18,6 +18,8 @@ configuration:
       type: boolean
     trivy-version:      
       type: string
+    scanners:
+      type: string
     security-checks:
       type: string
     image-ref:
@@ -28,4 +30,6 @@ configuration:
       type: string
     helm-overrides-file:
       type: string 
+    debug:
+      type: boolean
   additionalProperties: false

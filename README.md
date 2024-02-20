@@ -25,7 +25,7 @@ step with the default plugin configuration parameters:
 steps:
   - command: ls
     plugins:
-      - equinixmetal-buildkite/trivy#v1.18.3:
+      - equinixmetal-buildkite/trivy#v1.18.4:
 ```
 
 ## Additional examples
@@ -36,7 +36,7 @@ Specify the `--exit-code` option as a plugin parameter in `pipeline.yml` to fail
 steps:
   - command: ls
     plugins:
-      - equinixmetal-buildkite/trivy#v1.18.3:
+      - equinixmetal-buildkite/trivy#v1.18.4:
           exit-code: 1
 ```
 
@@ -46,7 +46,7 @@ Specify the `--severity` option as a plugin parameter in `pipeline.yml` to scan 
 steps:
   - command: ls
     plugins:
-      - equinixmetal-buildkite/trivy#v1.18.3:
+      - equinixmetal-buildkite/trivy#v1.18.4:
           severity: "CRITICAL"
 ```
 
@@ -69,9 +69,13 @@ Controls the severity of the vulnerabilities to be scanned. (Defaults to "UNKNOW
 
 Controls whether to display only fixed vulnerabilities. (Defaults to false)
 
-### `security-checks` (Optional, string)
+### `security-checks` (Optional, string) (DEPRECATED) 
 
-Controls the security checks to be performed. (Defaults to "vuln,config")
+Controls the security checks to be performed. This option is deprecated and may be removed in the future. Use `scanners` instead. (Defaults to "vuln,misconfig")
+
+### `scanners` (Optional, string)
+
+Controls the security scanners to be used. This replaced security-checks (Defaults to "vuln,misconfig")
 
 ### `skip-files` (Optional, string)
 
@@ -95,6 +99,9 @@ Controls the version of trivy to be used.
 
 To pass helm override values to trivy config scan
 
+### `debug` (Optional, boolean)
+
+Enable debug flag for trivy.
 
 ## Developing
 

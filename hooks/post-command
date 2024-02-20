@@ -72,6 +72,11 @@ final_exit_code="${BUILDKITE_PLUGIN_TRIVY_EXIT_CODE:-1}"
 args+=("--exit-code" "$final_exit_code")
 echo "using exit-code=$final_exit_code option while scanning"
 
+if [[ "${BUILDKITE_PLUGIN_TRIVY_DEBUG:-false}" == true ]] ; then
+  args+=("--debug")
+  echo "enabling debug output for trivy"
+fi
+
 if [[ -n "${BUILDKITE_PLUGIN_TRIVY_TIMEOUT:-}" ]] ; then
   args+=("--timeout" "${BUILDKITE_PLUGIN_TRIVY_TIMEOUT}")
   echo "using non-default timeout: '${BUILDKITE_PLUGIN_TRIVY_TIMEOUT}'"
@@ -93,8 +98,8 @@ if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SKIP_DIRS:-}" ]] ; then
 fi
 
 if [[ -n "${BUILDKITE_PLUGIN_TRIVY_HELM_OVERRIDES_FILE:-}" ]]; then
+	fsargs+=("--helm-values" "${BUILDKITE_PLUGIN_TRIVY_HELM_OVERRIDES_FILE}")
 	echo "scanning with helm overrides"
-	trivy conf --helm-values "${BUILDKITE_PLUGIN_TRIVY_HELM_OVERRIDES_FILE}" "${args[@]}" "${fsargs[@]}" .
 fi
 
 if [[ "${BUILDKITE_PLUGIN_TRIVY_IGNORE_UNFIXED:-false}" == true ]] ; then
@@ -102,12 +107,15 @@ if [[ "${BUILDKITE_PLUGIN_TRIVY_IGNORE_UNFIXED:-false}" == true ]] ; then
   echo "ignore-unfixed is set. Will ignore unfixed vulnerabilities"
 fi
 
-if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS:-}" ]] ; then
-  fsargs+=("--security-checks" "${BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS}")
-  echo "using $BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS security checks"
+if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SCANNERS:-}" ]] ; then
+  fsargs+=("--scanners" "${BUILDKITE_PLUGIN_TRIVY_SCANNERS}")
+  echo "using $BUILDKITE_PLUGIN_TRIVY_SCANNERS scanners"
+elif [[ -n "${BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS:-}" ]] ; then
+  fsargs+=("--scanners" "${BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS}")
+  echo "using $BUILDKITE_PLUGIN_TRIVY_SECURITY_CHECKS security checks - DEPRECATED, use scanners instead!"
 else
-  echo "using default security checks"
-  fsargs+=("--security-checks" "vuln,config")
+  echo "using default scanners"
+  fsargs+=("--scanners" "vuln,misconfig")
 fi
 
 echo "+++ scanning filesystem"
