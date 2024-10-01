@@ -18,35 +18,38 @@ about trivy, please refer to their
 
 ## Basic example
 
-The following code snippet demonstrates how to use the plugin in a pipeline
-step with the default plugin configuration parameters:
+The following code snippet demonstrates how to use the plugin in a pipeline step
+with the default plugin configuration parameters:
 
 ```yml
 steps:
   - command: ls
     plugins:
-      - equinixmetal-buildkite/trivy#v1.18.4:
+      - equinixmetal-buildkite/trivy#v1.18.5:
 ```
 
 ## Additional examples
 
-Specify the `--exit-code` option as a plugin parameter in `pipeline.yml` to fail the pipeline when there are vulnerabilities:
+Specify the `--exit-code` option as a plugin parameter in `pipeline.yml` to fail
+the pipeline when there are vulnerabilities:
 
 ```yml
 steps:
   - command: ls
     plugins:
-      - equinixmetal-buildkite/trivy#v1.18.4:
+      - equinixmetal-buildkite/trivy#v1.18.5:
           exit-code: 1
 ```
 
-Specify the `--severity` option as a plugin parameter in `pipeline.yml` to scan specific type of vulnerabilities. Below is an example for scanning `CRITICAL` vulnerabilities:
+Specify the `--severity` option as a plugin parameter in `pipeline.yml` to scan
+specific type of vulnerabilities. Below is an example for scanning `CRITICAL`
+vulnerabilities:
 
 ```yml
 steps:
   - command: ls
     plugins:
-      - equinixmetal-buildkite/trivy#v1.18.4:
+      - equinixmetal-buildkite/trivy#v1.18.5:
           severity: "CRITICAL"
 ```
 
@@ -54,7 +57,9 @@ steps:
 
 ### `exit-code` (Optional, integer)
 
-Controls whether the security scan is blocking or not. This is done by setting the exit code of the plugin. If the exit code is set to 0, the pipeline will continue. If the exit code is set to 1, the pipeline will fail. (Defaults to 0)
+Controls whether the security scan is blocking or not. This is done by setting
+the exit code of the plugin. If the exit code is set to 0, the pipeline will
+continue. If the exit code is set to 1, the pipeline will fail. (Defaults to 0)
 
 ### `timeout` (Optional, string)
 
@@ -63,19 +68,22 @@ Controls the maximum amount of time a scan will run for by passing the
 
 ### `severity` (Optional, string)
 
-Controls the severity of the vulnerabilities to be scanned. (Defaults to "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL")
+Controls the severity of the vulnerabilities to be scanned. (Defaults to
+"UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL")
 
 ### `ignore-unfixed` (Optional, boolean)
 
 Controls whether to display only fixed vulnerabilities. (Defaults to false)
 
-### `security-checks` (Optional, string) (DEPRECATED) 
+### `security-checks` (Optional, string) (DEPRECATED)
 
-Controls the security checks to be performed. This option is deprecated and may be removed in the future. Use `scanners` instead. (Defaults to "vuln,misconfig")
+Controls the security checks to be performed. This option is deprecated and may
+be removed in the future. Use `scanners` instead. (Defaults to "vuln,misconfig")
 
 ### `scanners` (Optional, string)
 
-Controls the security scanners to be used. This replaced security-checks (Defaults to "vuln,misconfig")
+Controls the security scanners to be used. This replaced security-checks
+(Defaults to "vuln,misconfig")
 
 ### `skip-files` (Optional, string)
 
@@ -87,9 +95,14 @@ Controls the directories to be skipped during the scan. (Defaults to "")
 
 ### `image-ref` (Optional, string)
 
-**Important**: Please ensure the target Docker image is built prior to the trivy plugin running when using this option. The trivy plugin does not build Docker images; it only scans existing images.
+**Important**: Please ensure the target Docker image is built prior to the trivy
+plugin running when using this option. The trivy plugin does not build Docker
+images; it only scans existing images.
 
-Controls the image reference to be scanned. If no image is specified, the image scanning step is skipped. This is also able to infer the image from the [`docker-metadata` plugin](https://github.com/equinixmetal-buildkite/docker-metadata-buidkite-plugin). (Defaults to "")
+Controls the image reference to be scanned. If no image is specified, the image
+scanning step is skipped. This is also able to infer the image from the
+[`docker-metadata` plugin](https://github.com/equinixmetal-buildkite/docker-metadata-buidkite-plugin).
+(Defaults to "")
 
 ### `trivy-version` (Optional, string)
 
@@ -120,8 +133,8 @@ TEST_DEBUG=1 make test
 To enable debug logging for a stubbed command in the test, you need to set or
 uncomment the export for the necessary command in the `.bats` file.
 
-e.g. to view the debug logging for the `trivy` command, set the following
-at the top of the `.bats` file:
+e.g. to view the debug logging for the `trivy` command, set the following at the
+top of the `.bats` file:
 
 ```shell
 export TRIVY_STUB_DEBUG=/dev/tty
