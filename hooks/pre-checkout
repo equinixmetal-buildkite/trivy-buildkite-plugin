@@ -29,7 +29,7 @@
 # - which
 # - mkdir
 
-readonly TRIVY_DEFAULT_VERSION="0.55.2"
+readonly TRIVY_DEFAULT_VERSION="0.54.1"
 export TRIVY_VERSION="${BUILDKITE_PLUGIN_TRIVY_TRIVY_VERSION:-$TRIVY_DEFAULT_VERSION}"
 REMOVE_FILE_ON_ERR=""
 
@@ -49,7 +49,7 @@ display_error() {
 # environment and uses it to build the OS and CPU string that
 # appears in each trivy release's file name.
 #
-# For example, the string for "trivy_0.31.3_FreeBSD-32bit.tar.gz" 
+# For example, the string for "trivy_0.31.3_FreeBSD-32bit.tar.gz"
 # would be "FreeBSD-32bit".
 trivy_os_cpu_string() {
   local UNAME_INFO=""
