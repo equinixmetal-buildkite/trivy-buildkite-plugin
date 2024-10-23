@@ -30,7 +30,7 @@ steps:
 
 ## Additional examples
 
-Specify the `--exit-code` option as a plugin parameter in `pipeline.yml` to fail
+Specify the `exit-code` option as a plugin parameter in `pipeline.yml` to fail
 the pipeline when there are vulnerabilities:
 
 ```yml
@@ -41,7 +41,7 @@ steps:
           exit-code: 1
 ```
 
-Specify the `--severity` option as a plugin parameter in `pipeline.yml` to scan
+Specify the `severity` option as a plugin parameter in `pipeline.yml` to scan
 specific type of vulnerabilities. Below is an example for scanning `CRITICAL`
 vulnerabilities:
 
@@ -51,6 +51,52 @@ steps:
     plugins:
       - equinixmetal-buildkite/trivy#v1.19.1:
           severity: "CRITICAL"
+```
+
+Specify the `ignorefile` option as a plugin parameter in `pipeline.yml` to use
+`.trivyignore.yaml` file
+
+```yml
+steps:
+  - command: ls
+    plugins:
+      - equinixmetal-buildkite/trivy#v1.19.1:
+          ignorefile: ".trivyignore.yaml"
+```
+
+$ cat .trivyignore.yaml
+```yml
+vulnerabilities:
+  - id: CVE-2022-40897
+    paths:
+      - "usr/local/lib/python3.9/site-packages/setuptools-58.1.0.dist-info/METADATA"
+    statement: Accept the risk
+  - id: CVE-2023-2650
+  - id: CVE-2023-3446
+  - id: CVE-2023-3817
+    purls:
+      - "pkg:deb/debian/libssl1.1"
+  - id: CVE-2023-29491
+    expired_at: 2023-09-01
+
+misconfigurations:
+  - id: AVD-DS-0001
+  - id: AVD-DS-0002
+    paths:
+      - "docs/Dockerfile"
+    statement: The image needs root privileges
+
+secrets:
+  - id: aws-access-key-id
+  - id: aws-secret-access-key
+    paths:
+      - "foo/bar/aws.secret"
+
+licenses:
+  - id: GPL-3.0 # License name is used as ID
+    paths:
+      - "usr/share/gcc/python/libstdcxx/v6/__init__.py"
+
 ```
 
 ## Configuration
@@ -84,6 +130,11 @@ be removed in the future. Use `scanners` instead. (Defaults to "vuln,misconfig")
 
 Controls the security scanners to be used. This replaced security-checks
 (Defaults to "vuln,misconfig")
+
+### `ignorefile` (Optional, string) (EXPERIMENTAL)
+
+Controls the security checks to be ignored as specified in a YAML file.
+Note: This trivy feature is experimental and might change in the future.
 
 ### `skip-files` (Optional, string)
 

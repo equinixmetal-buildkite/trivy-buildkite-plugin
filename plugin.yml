@@ -16,7 +16,7 @@ configuration:
       type: string
     ignore-unfixed:
       type: boolean
-    trivy-version:      
+    trivy-version:
       type: string
     scanners:
       type: string
@@ -24,12 +24,14 @@ configuration:
       type: string
     image-ref:
       type: string
+    ignorefile:
+      type: string
     skip-files:
       type: string
     skip-dirs:
       type: string
     helm-overrides-file:
-      type: string 
+      type: string
     debug:
       type: boolean
   additionalProperties: false

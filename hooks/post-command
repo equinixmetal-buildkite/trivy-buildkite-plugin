@@ -87,6 +87,11 @@ if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SEVERITY:-}" ]] ; then
   echo "using non-default severity types"
 fi
 
+if [[ -n "${BUILDKITE_PLUGIN_TRIVY_IGNOREFILE:-}" ]] ; then
+  fsargs+=("--ignorefile" "${BUILDKITE_PLUGIN_TRIVY_IGNOREFILE}")
+  echo "using ignore file '$BUILDKITE_PLUGIN_TRIVY_IGNOREFILE'"
+fi
+
 if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SKIP_FILES:-}" ]] ; then
   fsargs+=("--skip-files" "${BUILDKITE_PLUGIN_TRIVY_SKIP_FILES}")
   echo "skipping files '$BUILDKITE_PLUGIN_TRIVY_SKIP_FILES' from scan "
