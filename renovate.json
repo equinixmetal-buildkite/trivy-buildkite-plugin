@@ -1,23 +1,29 @@
 {
-    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "extends": [
-      "config:base"
-    ],
-    "regexManagers": [
-      {
-        "fileMatch": ["^(hooks\/.+|tests\/+.bats)$"],
-        "matchStrings": ["readonly TRIVY_DEFAULT_VERSION=\"(?<currentValue>.*?)\"\\s"],
-        "depNameTemplate": "aquasec/trivy",
-        "datasourceTemplate": "docker"
-      },
-      {
-        "fileMatch": [
-          "^Makefile$"
-        ],
-        "matchStrings": [
-            "[A-Z_]+_IMAGE=(?<depName>.*?):(?<currentValue>.*?)\\n"
-        ],
-        "datasourceTemplate": "docker"
-      }
-    ]
-  }
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^(hooks/.+|tests/+.bats)$"
+      ],
+      "matchStrings": [
+        "readonly TRIVY_DEFAULT_VERSION=\"(?<currentValue>.*?)\"\\s"
+      ],
+      "depNameTemplate": "aquasec/trivy",
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^Makefile$"
+      ],
+      "matchStrings": [
+        "[A-Z_]+_IMAGE=(?<depName>.*?):(?<currentValue>.*?)\\n"
+      ],
+      "datasourceTemplate": "docker"
+    }
+  ]
+}
