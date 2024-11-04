@@ -25,7 +25,7 @@ with the default plugin configuration parameters:
 steps:
   - command: ls
     plugins:
-      - equinixmetal-buildkite/trivy#v1.19.1:
+      - equinixmetal-buildkite/trivy#v1.20.0:
 ```
 
 ## Additional examples
@@ -37,7 +37,7 @@ the pipeline when there are vulnerabilities:
 steps:
   - command: ls
     plugins:
-      - equinixmetal-buildkite/trivy#v1.19.1:
+      - equinixmetal-buildkite/trivy#v1.20.0:
           exit-code: 1
 ```
 
@@ -49,7 +49,7 @@ vulnerabilities:
 steps:
   - command: ls
     plugins:
-      - equinixmetal-buildkite/trivy#v1.19.1:
+      - equinixmetal-buildkite/trivy#v1.20.0:
           severity: "CRITICAL"
 ```
 
@@ -60,7 +60,7 @@ Specify the `ignorefile` option as a plugin parameter in `pipeline.yml` to use
 steps:
   - command: ls
     plugins:
-      - equinixmetal-buildkite/trivy#v1.19.1:
+      - equinixmetal-buildkite/trivy#v1.20.0:
           ignorefile: ".trivyignore.yaml"
 ```
 
