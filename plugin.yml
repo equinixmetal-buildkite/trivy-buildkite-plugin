@@ -34,6 +34,6 @@ configuration:
       type: string
     debug:
       type: boolean
-    kube-version
+    kube-version:
       type: string
   additionalProperties: false
