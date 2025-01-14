@@ -167,6 +167,10 @@ To pass helm override values to trivy config scan
 
 Enable debug flag for trivy.
 
+### `kube-version` (Optional, string)
+
+Sets the `helm-kube-version` passed to trivy.
+
 ## Developing
 
 To run the tests:

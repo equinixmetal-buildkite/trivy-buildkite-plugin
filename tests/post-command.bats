@@ -369,3 +369,21 @@ default_exit_code="--exit-code 1"
   unstub docker
   unstub buildkite-agent
 }
+
+@test "fs scan of a test app with kube-version 1.21" {
+  export BUILDKITE_PLUGIN_TRIVY_KUBE_VERSION="1.21"
+
+  stub trivy "fs $default_exit_code --helm-kube-version $BUILDKITE_PLUGIN_TRIVY_KUBE_VERSION --scanners vuln,misconfig . : echo fs scan success"
+  stub buildkite-agent "annotate --style success \"trivy didn't find any relevant vulnerabilities in the repository<br />\" --context trivy-fs-scan : echo fs scan success" \
+    "annotate --style success \"No container image was scanned due to a lack of an image reference. This is fine.<br />\" --context trivy-container-scan : echo no image scan happened" \
+
+  run "$PWD/hooks/post-command"
+
+  assert_success
+  assert_output --partial "scanning filesystem"
+  assert_output --partial "fs scan success"
+  assert_output --partial "no image scan happened"
+
+  unstub trivy
+  unstub buildkite-agent
+}
