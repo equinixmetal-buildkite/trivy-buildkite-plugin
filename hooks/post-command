@@ -112,10 +112,10 @@ if [[ "${BUILDKITE_PLUGIN_TRIVY_IGNORE_UNFIXED:-false}" == true ]] ; then
   echo "ignore-unfixed is set. Will ignore unfixed vulnerabilities"
 fi
 
-if [[ -n "${BUILDKITE_PLUGIN_TRIVY_KUBE_VERSION:-}" ]] ; then
-  fsargs+=("--helm-kube-version" "${BUILDKITE_PLUGIN_TRIVY_KUBE_VERSION}")
-  echo "using non-default kube-version"
-fi
+# Set the helm kube version to a recent default or allow user to override
+helm_kube_version="${BUILDKITE_PLUGIN_TRIVY_KUBE_VERSION:-1.30}"
+fsargs+=("--helm-kube-version" "${helm_kube_version}")
+echo "using helm kube version ${helm_kube_version}"
 
 if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SCANNERS:-}" ]] ; then
   fsargs+=("--scanners" "${BUILDKITE_PLUGIN_TRIVY_SCANNERS}")
