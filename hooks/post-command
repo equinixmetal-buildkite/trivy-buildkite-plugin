@@ -88,7 +88,7 @@ if [[ -n "${BUILDKITE_PLUGIN_TRIVY_SEVERITY:-}" ]] ; then
 fi
 
 if [[ -n "${BUILDKITE_PLUGIN_TRIVY_IGNOREFILE:-}" ]] ; then
-  fsargs+=("--ignorefile" "${BUILDKITE_PLUGIN_TRIVY_IGNOREFILE}")
+  args+=("--ignorefile" "${BUILDKITE_PLUGIN_TRIVY_IGNOREFILE}")
   echo "using ignore file '$BUILDKITE_PLUGIN_TRIVY_IGNOREFILE'"
 fi
 
